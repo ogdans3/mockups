@@ -5,8 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dd45db57-d02b-40ad-8892-f4ff25c754dd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-image/Canvas.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-image/ExportButtons.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-image/MockImage.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-image/MockVideo.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-image/SceneSettings.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-image/ScrubNumber.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-image/Sidebar.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-image/TransformControls.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-video/Canvas.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-video/ExportButtons.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-video/MockVideo.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-video/SceneSettings.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-video/ScrubNumber.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-video/Sidebar.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-video/TransformControls.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/iphone-recording.mov" beforeDir="false" afterPath="$PROJECT_DIR$/static/iphone-recording.mov" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/components/ThreeScene.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/ThreeScene.svelte" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/+page.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/+page.svelte" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +43,9 @@
   &quot;associatedIndex&quot;: 8
 }</component>
   <component name="ProjectId" id="31kQV0bMkKROp12fqIJsslqZN1Q" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
     <option name="autoscrollToSource" value="true" />
@@ -37,13 +56,14 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "master",
     "go.import.settings.migrated": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/gabriel.b-hansen/ogdans3/git/mockups/static",
+    "last_opened_file_path": "/Users/gabriel.b-hansen/ogdans3/git/mockups/src/lib/components",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -53,7 +73,7 @@
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "settings.nodejs",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "show.migrate.to.gradle.popup": "false",
     "ts.external.directory.path": "/Users/gabriel.b-hansen/Library/Application Support/JetBrains/IntelliJIdea2025.2/plugins/javascript-plugin/jsLanguageServicesImpl/external",
     "vue.rearranger.settings.migration": "true"
@@ -61,6 +81,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/lib/components" />
+      <recent name="$PROJECT_DIR$/src/lib/components/ui" />
       <recent name="$PROJECT_DIR$/static" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -68,6 +90,86 @@
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="mockups" />
+      <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-i" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
+      <module name="mockups" />
+      <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-i" />
+      <kind value="DIRECTORY" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="mockups" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="mockups" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="mockups" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Python.FlaskServer">
+      <module name="mockups" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="mockups" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mockups" />
       <working_directory value="$PROJECT_DIR$" />
@@ -166,7 +268,8 @@
       <updated>1756065610818</updated>
       <workItem from="1756065611919" duration="4267000" />
       <workItem from="1756315036702" duration="5867000" />
-      <workItem from="1756756434009" duration="3286000" />
+      <workItem from="1756756434009" duration="7322000" />
+      <workItem from="1756838748658" duration="2117000" />
     </task>
     <servers />
   </component>
