@@ -1,6 +1,7 @@
 <script lang="ts">
     import Sidebar from '$lib/components/mock-video/Sidebar.svelte';
     import Canvas from '$lib/components/mock-video/Canvas.svelte';
+    import Timeline from '$lib/components/mock-video/Timeline.svelte';
 
     type Axis = 'x' | 'y' | 'z';
     let pos: Record<Axis, number> = {x: 0, y: 0, z: 0};
@@ -53,8 +54,7 @@
 </script>
 
 <div
-        class="h-dvh min-h-0 grid grid-rows-[auto_1fr_auto] md:grid-rows-none
-         md:grid-cols-[340px_1fr] bg-surface-950 text-surface-50"
+        class="h-dvh min-h-0 flex flex-col md:flex-row bg-surface-950 text-surface-50"
 >
     <Sidebar
             {pos}
@@ -68,16 +68,22 @@
             onPresetChange={updatePreset}
             onDownloadImage={downloadImage}
             onDownloadVideo={downloadVideo}
+            class="w-[340px] flex-shrink-0"
     />
 
-    <Canvas
-            bind:sceneRef
-            {pos}
-            {rot}
-            {background}
-            {width}
-            {height}
-    />
+    <div class="flex flex-col flex-1 min-w-0">
+        <Canvas
+                bind:sceneRef
+                {pos}
+                {rot}
+                {background}
+                {width}
+                {height}
+                class="flex-1"
+        />
+
+        <Timeline class="h-48 border-t border-surface-700/40"/>
+    </div>
 </div>
 
 <style>
