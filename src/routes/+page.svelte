@@ -1,5 +1,5 @@
 <script lang="ts">
-    import MockImage from '$lib/components/mock-image/MockImage.svelte';
+    import MockVideo from '$lib/components/mock-video/MockVideo.svelte';
 </script>
 
-<MockImage/>
+<MockVideo/>

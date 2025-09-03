@@ -1,6 +1,6 @@
 <script lang="ts">
-    import Sidebar from '$lib/components/mock-image/Sidebar.svelte';
-    import Canvas from '$lib/components/mock-image/Canvas.svelte';
+    import Sidebar from '$lib/components/mock-video/Sidebar.svelte';
+    import Canvas from '$lib/components/mock-video/Canvas.svelte';
 
     type Axis = 'x' | 'y' | 'z';
     let pos: Record<Axis, number> = {x: 0, y: 0, z: 0};
