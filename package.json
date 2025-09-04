@@ -29,6 +29,7 @@
 	},
 	"dependencies": {
 		"clsx": "^2.1.1",
+		"lucide-svelte": "^0.542.0",
 		"three": "^0.179.1",
 		"uuid": "^11.1.0"
 	}

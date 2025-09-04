@@ -1,10 +1,14 @@
 <script lang="ts">
+    import {Play, Pause} from "lucide-svelte";
     import {v4 as uuid} from "uuid";
     import type {Track, Animation} from "./Animation";
     import {get, derived} from "svelte/store";
+    import {onMount} from "svelte";
     import {zeroVec} from "./Animation";
     import {playheadPosition} from "../../stores/playhead.svelte";
+    import {videoPlaying, videoController} from "../../stores/video.svelte";
     import TrackComponent from "./Track.svelte";
+    import {settings} from "$lib/stores/settings.svelte";
 
     let {
         endTime = 10,
@@ -132,54 +136,66 @@
 
     let playheadX = $state(0);
     playheadPosition.subscribe((currentTime) => {
-        if (endTime <= startTime || rulerContainerWidth === 0) {
-            return 0;
-        }
+        if (endTime <= startTime || rulerContainerWidth === 0) return;
         const progress = (currentTime - startTime) / (endTime - startTime);
         playheadX = Math.max(0, Math.min(1, progress)) * rulerContainerWidth;
-    })
+    });
     addPhone();
 </script>
 
 <div class="timeline bg-surface-900 border-t border-surface-700/40 p-4 flex flex-col gap-4">
     <!-- Timeline controls -->
-    <div class="flex items-center justify-end gap-2 text-sm text-surface-300">
-        <div class="relative">
-            <input
-                    id="start-time"
-                    type="text"
-                    bind:value={currentTimeField}
-                    onblur={handleCurrentTimeInput}
-                    class="w-16 rounded bg-surface-800/80 px-1 py-0.5 pr-4 text-xs text-right
+    <div class="flex items-center justify-between text-sm text-surface-300">
+        <button
+                class="inline-flex items-center justify-center rounded-md "
+                aria-label={$videoPlaying ? "Pause" : "Play"}
+                onclick={() => $videoController.toggle()}
+                title={$videoPlaying ? "Pause" : "Play"}
+        >
+            {#if $videoPlaying}
+                <Pause size={32}/>
+            {:else}
+                <Play size={32}/>
+            {/if}
+        </button>
+        <div class="flex flex-row gap-2">
+            <div class="relative">
+                <input
+                        id="start-time"
+                        type="text"
+                        bind:value={currentTimeField}
+                        onblur={handleCurrentTimeInput}
+                        class="w-16 rounded bg-surface-800/80 px-1 py-0.5 pr-4 text-xs text-right
              text-surface-100 border border-surface-700/50
              focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    aria-label="Start time in seconds"
-            />
-            <span
-                    class="absolute right-1 top-1/2 -translate-y-1/2 text-surface-400 text-[10px] pointer-events-none"
-            >
-                s
-            </span>
-        </div>
+                        aria-label="Start time in seconds"
+                />
+                <span
+                        class="absolute right-1 top-1/2 -translate-y-1/2 text-surface-400 text-[10px] pointer-events-none"
+                >
+                    s
+                </span>
+            </div>
 
-        <span class="text-surface-400">of</span>
+            <span class="text-surface-400">of</span>
 
-        <div class="relative">
-            <input
-                    id="end-time"
-                    type="text"
-                    bind:value={endTimeField}
-                    onblur={handleEndInput}
-                    class="w-16 rounded bg-surface-800/80 px-1 py-0.5 pr-4 text-xs text-right
+            <div class="relative">
+                <input
+                        id="end-time"
+                        type="text"
+                        bind:value={endTimeField}
+                        onblur={handleEndInput}
+                        class="w-16 rounded bg-surface-800/80 px-1 py-0.5 pr-4 text-xs text-right
              text-surface-100 border border-surface-700/50
              focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    aria-label="End time in seconds"
-            />
-            <span
-                    class="absolute right-1 top-1/2 -translate-y-1/2 text-surface-400 text-[10px] pointer-events-none"
-            >
-                s
-            </span>
+                        aria-label="End time in seconds"
+                />
+                <span
+                        class="absolute right-1 top-1/2 -translate-y-1/2 text-surface-400 text-[10px] pointer-events-none"
+                >
+                    s
+                </span>
+            </div>
         </div>
     </div>
 

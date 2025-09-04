@@ -92,29 +92,34 @@
         window.removeEventListener("mouseup", stopDrag);
     }
 
-    function selectKeyframe(animation: Animation, keyframe: 0 | 1) {
-        console.log("Select keyframe: ", animation, keyframe);
+    function toggleKeyframe(animation: Animation, keyframeIndex: 0 | 1) {
+        const keyframe = animation.keyframes[keyframeIndex];
+        if (get(selectedAnimationStore)?.id === animation.id && get(selectedAnimationKeyframe)?.id === keyframe.id) {
+            selectedAnimationStore.set(null);
+            selectedAnimationKeyframe.set(null);
+            return;
+        }
         selectedAnimationStore.set(animation);
-        selectedAnimationKeyframe.set(animation.keyframes[keyframe]);
+        selectedAnimationKeyframe.set(keyframe);
 
-        playheadPosition.set(animation.keyframes[keyframe].time);
+        playheadPosition.set(keyframe.time);
         transformControlPosition.subscribe((position: Vec3) => {
             if (animation.id !== get(selectedAnimationStore)?.id) {
                 return;
             }
-            if (animation.keyframes[keyframe].id !== get(selectedAnimationKeyframe)?.id) {
+            if (keyframe.id !== get(selectedAnimationKeyframe)?.id) {
                 return;
             }
-            animation.keyframes[keyframe].position = position;
+            keyframe.position = position;
         });
         transformControlRotation.subscribe((rotation: Vec3) => {
             if (animation.id !== get(selectedAnimationStore)?.id) {
                 return;
             }
-            if (animation.keyframes[keyframe].id !== get(selectedAnimationKeyframe)?.id) {
+            if (keyframe.id !== get(selectedAnimationKeyframe)?.id) {
                 return;
             }
-            animation.keyframes[keyframe].rotation = rotation;
+            keyframe.rotation = rotation;
         });
     }
 </script>
@@ -147,12 +152,12 @@
                     class="w-6 h-full flex items-center justify-center"
                     aria-label="Set start keyframe"
                     title="Set start keyframe"
-                    onclick={() => selectKeyframe(anim, 0)}
+                    onclick={() => toggleKeyframe(anim, 0)}
             >
                 <span
-                        class="w-4 h-4 rounded-full bg-primary-400 transition-opacity"
-                        class:opacity-100={$selectedAnimationStore?.id === anim.id && $selectedAnimationKeyframe.id === anim.keyframes[0].id}
-                        class:opacity-0={!($selectedAnimationStore?.id === anim.id && $selectedAnimationKeyframe.id === anim.keyframes[0].id)}
+                        class="w-4 h-4 rounded-full transition-colors"
+                        class:bg-white={$selectedAnimationStore?.id === anim.id && $selectedAnimationKeyframe.id === anim.keyframes[0].id}
+                        class:bg-surface-400={!($selectedAnimationStore?.id === anim.id && $selectedAnimationKeyframe.id === anim.keyframes[0].id)}
                 ></span>
             </button>
 
@@ -172,12 +177,12 @@
                     class="w-6 h-full flex items-center justify-center"
                     aria-label="Set end keyframe"
                     title="Set end keyframe"
-                    onclick={() => selectKeyframe(anim, 1)}
+                    onclick={() => toggleKeyframe(anim, 1)}
             >
                 <span
-                        class="w-4 h-4 rounded-full bg-primary-400 transition-opacity"
-                        class:opacity-100={$selectedAnimationStore?.id === anim.id && $selectedAnimationKeyframe.id === anim.keyframes[1].id}
-                        class:opacity-0={!($selectedAnimationStore?.id === anim.id && $selectedAnimationKeyframe.id === anim.keyframes[1].id)}
+                        class="w-4 h-4 rounded-full transition-colors"
+                        class:bg-white={$selectedAnimationStore?.id === anim.id && $selectedAnimationKeyframe.id === anim.keyframes[1].id}
+                        class:bg-surface-400={!($selectedAnimationStore?.id === anim.id && $selectedAnimationKeyframe.id === anim.keyframes[1].id)}
                 ></span>
             </button>
 

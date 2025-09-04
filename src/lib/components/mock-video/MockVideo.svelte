@@ -1,9 +1,12 @@
 <script lang="ts">
+    import {onMount, onDestroy} from "svelte";
+    import {get} from "svelte/store";
     import Sidebar from '$lib/components/mock-video/Sidebar.svelte';
     import Canvas from '$lib/components/mock-video/Canvas.svelte';
     import {zeroVec} from '$lib/components/mock-video/Animation';
     import Timeline from '$lib/components/mock-video/Timeline.svelte';
     import {transformControlPosition, transformControlRotation} from "../../stores/transform.svelte";
+    import {videoController, VideoController} from "../../stores/video.svelte";
 
     type Axis = 'x' | 'y' | 'z';
     let background = '#111111';
@@ -54,6 +57,21 @@
         a.click();
         URL.revokeObjectURL(url);
     }
+
+    function handleKeydown(e: KeyboardEvent) {
+        if (e.code === "Space") {
+            e.preventDefault();
+            console.log("Space pressed!");
+        }
+    }
+
+    onMount(() => {
+        window.addEventListener("keydown", handleKeydown);
+        get(videoController).toggle();
+    });
+    onDestroy(() => {
+        return () => window.removeEventListener("keydown", handleKeydown);
+    });
 </script>
 
 <div

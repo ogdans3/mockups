@@ -2,6 +2,9 @@
     import {onMount} from "svelte";
     import * as THREE from "three";
     import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
+    import {playheadPosition} from "$lib/stores/playhead.svelte";
+    import {videoController} from "$lib/stores/video.svelte";
+    import {get} from "svelte/store";
 
     import config from "../../models/iphone-1.model.json";
 
@@ -55,6 +58,7 @@
         video.autoplay = true;
         video.playsInline = true;
         video.play();
+        get(videoController).setVideo(video);
 
         const videoTexture = new THREE.VideoTexture(video);
         videoTexture.encoding = THREE.sRGBEncoding;

@@ -5,17 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dd45db57-d02b-40ad-8892-f4ff25c754dd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/lib/stores/animation.svelte.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/stores/playhead.svelte.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/stores/transform.svelte.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/stores/settings.svelte.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/stores/video.svelte.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/Animation.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/Animation.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/components/ThreeScene.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/ThreeScene.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/Canvas.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/Canvas.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/MockVideo.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/MockVideo.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/Sidebar.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/Sidebar.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/Timeline.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/Timeline.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/Track.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/Track.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/TransformControls.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/TransformControls.svelte" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
