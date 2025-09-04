@@ -103,8 +103,11 @@
     let currentTimeField = $state(currentTime.toFixed(2));
     let endTimeField = $state(endTime.toFixed(2));
 
-    function handleStartInput(e: Event) {
-        const val = parseFloat((e.target as HTMLInputElement).value);
+    function handleCurrentTimeInput(e: Event) {
+        let val = parseFloat((e.target as HTMLInputElement).value);
+        if (val > endTime) {
+            val = endTime;
+        }
         if (!isNaN(val)) {
             currentTime = val;
             currentTimeField = val.toFixed(2);
@@ -122,16 +125,28 @@
             endTimeField = "";
         }
     }
+
+    const playheadX = $derived.by(() => {
+        console.log("Set playhead position");
+        if (endTime <= startTime || rulerContainerWidth === 0) {
+            return 0;
+        }
+        const progress = (currentTime - startTime) / (endTime - startTime);
+        console.log(progress);
+        console.log("Set playhead position: ", Math.max(0, Math.min(1, progress)), rulerContainerWidth);
+        return Math.max(0, Math.min(1, progress)) * rulerContainerWidth;
+    });
 </script>
 
 <div class="timeline bg-surface-900 border-t border-surface-700/40 p-4 flex flex-col gap-4">
+    <!-- Timeline controls -->
     <div class="flex items-center justify-end gap-2 text-sm text-surface-300">
         <div class="relative">
             <input
                     id="start-time"
                     type="text"
                     bind:value={currentTimeField}
-                    onblur={handleStartInput}
+                    onblur={handleCurrentTimeInput}
                     class="w-16 rounded bg-surface-800/80 px-1 py-0.5 pr-4 text-xs text-right
              text-surface-100 border border-surface-700/50
              focus:outline-none focus:ring-1 focus:ring-primary-500"
@@ -165,62 +180,73 @@
         </div>
     </div>
 
-    <div class="rounded-md ring-1 ring-surface-700/40 bg-surface-900/40 overflow-hidden">
-        <div class="flex items-stretch border-b border-surface-700/40">
-            <div class="overflow-hidden grow" bind:clientWidth={rulerContainerWidth}>
-                <div class="relative h-8 w-full">
-                    <div class="flex h-full w-full">
-                        {#each ticks as tick}
-                            <div
-                                    class="flex flex-col items-center"
-                                    style={`width:${tickWidth}px;`}
-                            >
+    <div class="overflow-hidden relative">
+        <!-- Ticks -->
+        <div class="rounded-md ring-1 ring-surface-700/40 bg-surface-900/40 overflow-hidden">
+            <div class="flex items-stretch border-b border-surface-700/40">
+                <div class="overflow-hidden grow" bind:clientWidth={rulerContainerWidth}>
+                    <div class="relative h-8 w-full">
+                        <div class="flex h-full w-full">
+                            {#each ticks as tick}
                                 <div
-                                        class={tick.type === "major" ? "h-full border-l border-surface-400" : "h-1/2 border-l border-surface-600"}
-                                ></div>
+                                        class="flex flex-col items-start"
+                                        style:width={tickWidth + 'px'}
+                                >
+                                    <div class={tick.type === "major" ? "h-full border-l border-surface-400" : "h-1/2 border-l border-surface-600"}></div>
 
-                                {#if tick.label}
-                                    <div class="text-xs text-surface-400 mt-0.5">
-                                        {tick.label}
-                                    </div>
-                                {/if}
-                            </div>
+                                    {#if tick.label}
+                                        <div
+                                                class="mt-0.5 text-xs text-surface-400 self-start"
+                                                style="transform: translateX(-50%);"
+                                        >
+                                            {tick.label}
+                                        </div>
+                                    {/if}
+                                </div>
+                            {/each}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tracks -->
+            <div class="flex">
+                <div class="overflow-x-auto grow">
+                    <div>
+                        {#each tracks as track (track.id)}
+                            <TrackComponent
+                                    {track}
+                                    {currentTime}
+                                    {endTime}
+                            />
                         {/each}
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="flex">
-            <div class="overflow-x-auto grow">
-                <div>
-                    {#each tracks as track (track.id)}
-                        <TrackComponent
-                                {track}
-                                {currentTime}
-                                {endTime}
-                        />
-                    {/each}
+        <!-- Controls per track: separate row with buttons -->
+        <div class="mt-3 space-y-2">
+            {#each tracks as track (track.id)}
+                <div class="flex items-center justify-between">
+                    <div class="text-xs text-surface-400">
+                        {track.phoneName}
+                    </div>
+                    <button
+                            class="px-2 py-1 rounded-md bg-secondary-600 text-white text-xs font-medium hover:bg-secondary-500"
+                            onclick={() => addAnimation(track.id)}
+                    >
+                        ➕ Add animation
+                    </button>
                 </div>
-            </div>
+            {/each}
         </div>
-    </div>
 
-    <!-- Controls per track: separate row with buttons -->
-    <div class="mt-3 space-y-2">
-        {#each tracks as track (track.id)}
-            <div class="flex items-center justify-between">
-                <div class="text-xs text-surface-400">
-                    {track.phoneName}
-                </div>
-                <button
-                        class="px-2 py-1 rounded-md bg-secondary-600 text-white text-xs font-medium hover:bg-secondary-500"
-                        onclick={() => addAnimation(track.id)}
-                >
-                    ➕ Add animation
-                </button>
-            </div>
-        {/each}
+        <!-- 🔴 Playhead -->
+        <div
+                class="absolute top-0 bottom-0 w-[2px] bg-red-500 pointer-events-none"
+                style:left={playheadX + 'px'}
+        ></div>
     </div>
 </div>
 
