@@ -54,24 +54,24 @@
 </script>
 
 <div
-        class="h-dvh min-h-0 flex flex-col md:flex-row bg-surface-950 text-surface-50"
+        class="h-dvh min-h-0 flex flex-col bg-surface-950 text-surface-50"
 >
-    <Sidebar
-            {pos}
-            {rot}
-            {background}
-            {selectedPreset}
-            {presets}
-            {width}
-            {height}
-            onReset={resetTransforms}
-            onPresetChange={updatePreset}
-            onDownloadImage={downloadImage}
-            onDownloadVideo={downloadVideo}
-            class="w-[340px] flex-shrink-0"
-    />
+    <div class="flex flex-row flex-1 min-w-0">
+        <Sidebar
+                {pos}
+                {rot}
+                {background}
+                {selectedPreset}
+                {presets}
+                {width}
+                {height}
+                onReset={resetTransforms}
+                onPresetChange={updatePreset}
+                onDownloadImage={downloadImage}
+                onDownloadVideo={downloadVideo}
+                class="w-[340px] flex-shrink-0"
+        />
 
-    <div class="flex flex-col flex-1 min-w-0">
         <Canvas
                 bind:sceneRef
                 {pos}
@@ -82,8 +82,8 @@
                 class="flex-1"
         />
 
-        <Timeline class="h-48 border-t border-surface-700/40"/>
     </div>
+    <Timeline class="h-48 border-t border-surface-700/40"/>
 </div>
 
 <style>

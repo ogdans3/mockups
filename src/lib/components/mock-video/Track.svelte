@@ -2,9 +2,12 @@
     import type {Track, Animation} from './Animation';
 
     export let track: Track;
-    export let startTime: number;
+    export let currentTime: number;
+    export let startTime: number = 0;
     export let endTime: number;
-    export let pxPerSecond: number; // injected from Timeline for exact alignment
+    //export let pxPerSecond: number; // injected from Timeline for exact alignment
+
+    let pxPerSecond = 10;
 
     function leftFor(t: number) {
         return (t - startTime) * pxPerSecond;
@@ -15,18 +18,7 @@
     }
 </script>
 
-<!-- One lane (height must match label row height) -->
 <div class="relative h-10 bg-surface-900/60 border-b border-surface-700/30">
-    <!-- Background grid -->
-    <div class="absolute inset-0 pointer-events-none flex">
-        {#each Array(Math.max(0, Math.floor(endTime - startTime) + 1)) as _, i}
-            <div
-                    class="h-full border-l border-surface-700/30"
-                    style={`width:${pxPerSecond}px;`}
-            />
-        {/each}
-    </div>
-
     <!-- Clips -->
     {#each track.animations as anim (anim.id)}
         <div
