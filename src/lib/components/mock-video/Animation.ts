@@ -3,16 +3,22 @@ export type Vec3 = {
     y: number;
     z: number;
 };
+export const zeroVec: () => Vec3 = () => ({x: 0, y: 0, z: 0});
+
+export type Keyframe = {
+    id: string;
+    position: Vec3;
+    rotation: Vec3;
+    opacity: number;
+    time: number;
+};
 
 export type Animation = {
     id: string;
     name: string;
-    start: number; // seconds
-    end: number; // seconds
-    posStart: Vec3;
-    posEnd: Vec3;
-    rotStart: Vec3;
-    rotEnd: Vec3;
+    start: number;
+    end: number;
+    keyframes: Keyframe[];
 };
 
 export type Track = {

@@ -1,8 +1,10 @@
 <script lang="ts">
     import ScrubNumber from '$lib/components/mock-video/ScrubNumber.svelte';
+    import {
+        transformControlPosition,
+        transformControlRotation
+    } from "$lib/stores/transform.svelte";
 
-    export let pos: Record<'x' | 'y' | 'z', number>;
-    export let rot: Record<'x' | 'y' | 'z', number>;
     export let onReset: () => void;
 
     const axes: readonly ('x' | 'y' | 'z')[] = ['x', 'y', 'z'];
@@ -35,7 +37,7 @@
             <div class="grid grid-cols-3 gap-3">
                 {#each axes as axis}
                     <ScrubNumber
-                            bind:value={pos[axis]}
+                            bind:value={$transformControlPosition[axis]}
                             min={axis === 'z' ? -5 : -2}
                             max={axis === 'z' ? 5 : 2}
                             step={0.1}
@@ -55,7 +57,7 @@
             <div class="grid grid-cols-3 gap-3">
                 {#each axes as axis}
                     <ScrubNumber
-                            bind:value={rot[axis]}
+                            bind:value={$transformControlRotation[axis]}
                             min={-360}
                             max={360}
                             step={0.1}

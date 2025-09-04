@@ -5,8 +5,6 @@
     import {cn} from '$lib/utils/cn.ts';
 
     const {
-        pos,
-        rot,
         background,
         selectedPreset,
         presets,
@@ -32,7 +30,7 @@
     </div>
 
     <div class="flex-1 overflow-y-auto p-4 space-y-6">
-        <TransformControls {pos} {rot} onReset={onReset}/>
+        <TransformControls onReset={onReset}/>
         <SceneSettings
                 {background}
                 {selectedPreset}

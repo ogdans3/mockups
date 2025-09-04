@@ -1,9 +1,11 @@
 <script lang="ts">
     import ThreeScene from '$lib/components/ThreeScene.svelte';
+    import {
+        transformControlPosition,
+        transformControlRotation
+    } from "$lib/stores/transform.svelte";
 
     export let sceneRef: any;
-    export let pos;
-    export let rot;
     export let background;
     export let width;
     export let height;
@@ -17,8 +19,8 @@
     >
         <ThreeScene
                 bind:this={sceneRef}
-                {pos}
-                {rot}
+                pos={$transformControlPosition}
+                rot={$transformControlRotation}
                 {background}
                 {width}
                 {height}

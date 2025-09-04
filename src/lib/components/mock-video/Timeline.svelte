@@ -1,10 +1,14 @@
 <script lang="ts">
     import {v4 as uuid} from "uuid";
     import type {Track, Animation} from "./Animation";
+    import {get, derived} from "svelte/store";
+    import {zeroVec} from "./Animation";
+    import {playheadPosition} from "../../stores/playhead.svelte";
     import TrackComponent from "./Track.svelte";
 
-    let {currentTime: currentTime = 0, endTime = 10} = $props<{
-        currentTime?: number;
+    let {
+        endTime = 10,
+    } = $props<{
         endTime?: number;
     }>();
     let startTime = 0;
@@ -25,10 +29,10 @@
             name: `Animation ${index + 1}`,
             start,
             end,
-            posStart: {x: 0, y: 0, z: 0},
-            posEnd: {x: 0, y: 0, z: 0},
-            rotStart: {x: 0, y: 0, z: 0},
-            rotEnd: {x: 0, y: 0, z: 0}
+            keyframes: [
+                {id: uuid(), time: start, position: zeroVec(), rotation: zeroVec(), opacity: 0},
+                {id: uuid(), time: end, position: zeroVec(), rotation: zeroVec(), opacity: 0},
+            ],
         };
     }
 
@@ -100,7 +104,7 @@
         return arr;
     });
 
-    let currentTimeField = $state(currentTime.toFixed(2));
+    let currentTimeField = $state(get(playheadPosition).toFixed(2));
     let endTimeField = $state(endTime.toFixed(2));
 
     function handleCurrentTimeInput(e: Event) {
@@ -109,7 +113,7 @@
             val = endTime;
         }
         if (!isNaN(val)) {
-            currentTime = val;
+            playheadPosition.set(val);
             currentTimeField = val.toFixed(2);
         } else {
             currentTimeField = "";
@@ -126,13 +130,14 @@
         }
     }
 
-    const playheadX = $derived.by(() => {
+    let playheadX = $state(0);
+    playheadPosition.subscribe((currentTime) => {
         if (endTime <= startTime || rulerContainerWidth === 0) {
             return 0;
         }
         const progress = (currentTime - startTime) / (endTime - startTime);
-        return Math.max(0, Math.min(1, progress)) * rulerContainerWidth;
-    });
+        playheadX = Math.max(0, Math.min(1, progress)) * rulerContainerWidth;
+    })
     addPhone();
 </script>
 
@@ -215,7 +220,6 @@
                             <TrackComponent
                                     bind:track={tracks[i]}
                                     {startTime}
-                                    {currentTime}
                                     {endTime}
                                     {pxPerSecond}
                             />

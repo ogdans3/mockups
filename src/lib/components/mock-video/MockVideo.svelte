@@ -1,12 +1,15 @@
 <script lang="ts">
     import Sidebar from '$lib/components/mock-video/Sidebar.svelte';
     import Canvas from '$lib/components/mock-video/Canvas.svelte';
+    import {zeroVec} from '$lib/components/mock-video/Animation';
     import Timeline from '$lib/components/mock-video/Timeline.svelte';
+    import {transformControlPosition, transformControlRotation} from "../../stores/transform.svelte";
 
     type Axis = 'x' | 'y' | 'z';
-    let pos: Record<Axis, number> = {x: 0, y: 0, z: 0};
-    let rot: Record<Axis, number> = {x: 0, y: 0, z: 0};
     let background = '#111111';
+
+    let selectedAnimation;
+    let selectedKeyframe;
 
     const presets = {
         'Full HD (16:9)': {width: 1920, height: 1080},
@@ -28,8 +31,8 @@
     let sceneRef: any;
 
     function resetTransforms() {
-        pos = {x: 0, y: 0, z: 0};
-        rot = {x: 0, y: 0, z: 0};
+        transformControlPosition.set(zeroVec());
+        transformControlRotation.set(zeroVec());
     }
 
     function downloadImage() {
@@ -58,13 +61,13 @@
 >
     <div class="flex flex-row flex-1 min-w-0">
         <Sidebar
-                {pos}
-                {rot}
                 {background}
                 {selectedPreset}
                 {presets}
                 {width}
                 {height}
+                {selectedAnimation}
+                {selectedKeyframe}
                 onReset={resetTransforms}
                 onPresetChange={updatePreset}
                 onDownloadImage={downloadImage}
@@ -74,8 +77,6 @@
 
         <Canvas
                 bind:sceneRef
-                {pos}
-                {rot}
                 {background}
                 {width}
                 {height}
