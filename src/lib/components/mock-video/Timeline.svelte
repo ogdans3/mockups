@@ -68,6 +68,7 @@
     const tickWidth = $derived(
         totalTicks > 0 ? rulerContainerWidth / totalTicks : 0
     );
+    const pxPerSecond = $derived(endTime - startTime > 0 ? rulerContainerWidth / endTime - startTime : 0);
 
     const ticks = $derived.by(() => {
         const arr: { time: number; type: "major" | "minor"; label?: string }[] = [];
@@ -126,15 +127,13 @@
     }
 
     const playheadX = $derived.by(() => {
-        console.log("Set playhead position");
         if (endTime <= startTime || rulerContainerWidth === 0) {
             return 0;
         }
         const progress = (currentTime - startTime) / (endTime - startTime);
-        console.log(progress);
-        console.log("Set playhead position: ", Math.max(0, Math.min(1, progress)), rulerContainerWidth);
         return Math.max(0, Math.min(1, progress)) * rulerContainerWidth;
     });
+    addPhone();
 </script>
 
 <div class="timeline bg-surface-900 border-t border-surface-700/40 p-4 flex flex-col gap-4">
@@ -212,11 +211,13 @@
             <div class="flex">
                 <div class="overflow-x-auto grow">
                     <div>
-                        {#each tracks as track (track.id)}
+                        {#each tracks as track, i (track.id)}
                             <TrackComponent
-                                    {track}
+                                    bind:track={tracks[i]}
+                                    {startTime}
                                     {currentTime}
                                     {endTime}
+                                    {pxPerSecond}
                             />
                         {/each}
                     </div>
@@ -235,14 +236,14 @@
                             class="px-2 py-1 rounded-md bg-secondary-600 text-white text-xs font-medium hover:bg-secondary-500"
                             onclick={() => addAnimation(track.id)}
                     >
-                        ➕ Add animation
+                        Add animation
                     </button>
                 </div>
             {/each}
         </div>
 
         <!-- 🔴 Playhead -->
-        <div class="absolute left-0 right-0 top-0 bottom-0 mx-4">
+        <div class="absolute left-0 right-0 top-0 bottom-0 mx-4 pointer-events-none">
             <div
                     class="absolute top-0 bottom-0 w-[1px] bg-red-500 pointer-events-none"
                     style:left={playheadX + 'px'}
