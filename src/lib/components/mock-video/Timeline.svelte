@@ -70,8 +70,7 @@
     );
 
     const ticks = $derived.by(() => {
-        const arr: { time: number; type: "major" | "minor"; label?: string }[] =
-            [];
+        const arr: { time: number; type: "major" | "minor"; label?: string }[] = [];
         const step = 0.5;
 
         // Always include start
@@ -180,24 +179,24 @@
         </div>
     </div>
 
-    <div class="overflow-hidden relative">
+    <div class="overflow-hidden relative px-4">
         <!-- Ticks -->
-        <div class="rounded-md ring-1 ring-surface-700/40 bg-surface-900/40 overflow-hidden">
+        <div class="rounded-md ring-1 ring-surface-700/40 bg-surface-900/40">
             <div class="flex items-stretch border-b border-surface-700/40">
-                <div class="overflow-hidden grow" bind:clientWidth={rulerContainerWidth}>
+                <div class="grow" bind:clientWidth={rulerContainerWidth}>
                     <div class="relative h-8 w-full">
-                        <div class="flex h-full w-full">
-                            {#each ticks as tick}
-                                <div
-                                        class="flex flex-col items-start"
-                                        style:width={tickWidth + 'px'}
+                        <div class="flex h-full w-full relative">
+                            <!-- All ticks except the last one -->
+                            {#each ticks as tick, i}
+                                <div class="flex flex-col items-start"
+                                     style:width={i === ticks.length - 1 ? 0 + "px": tickWidth + "px"}
                                 >
-                                    <div class={tick.type === "major" ? "h-full border-l border-surface-400" : "h-1/2 border-l border-surface-600"}></div>
+                                    <div class={tick.type === "major" ? "h-full border-l border-surface-400" : "h-1/2 border-l border-surface-600"}>
+                                    </div>
 
                                     {#if tick.label}
-                                        <div
-                                                class="mt-0.5 text-xs text-surface-400 self-start"
-                                                style="transform: translateX(-50%);"
+                                        <div class="mt-0.5 text-xs text-surface-400 self-start"
+                                             style="transform: translateX(-50%);"
                                         >
                                             {tick.label}
                                         </div>
@@ -243,10 +242,12 @@
         </div>
 
         <!-- 🔴 Playhead -->
-        <div
-                class="absolute top-0 bottom-0 w-[2px] bg-red-500 pointer-events-none"
-                style:left={playheadX + 'px'}
-        ></div>
+        <div class="absolute left-0 right-0 top-0 bottom-0 mx-4">
+            <div
+                    class="absolute top-0 bottom-0 w-[1px] bg-red-500 pointer-events-none"
+                    style:left={playheadX + 'px'}
+            ></div>
+        </div>
     </div>
 </div>
 
