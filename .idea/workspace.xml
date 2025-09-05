@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dd45db57-d02b-40ad-8892-f4ff25c754dd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/lib/animations/FromBottom.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/stores/tracks.svelte.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/Track.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/Track.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Timeline.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Timeline.svelte" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -49,7 +48,7 @@
     "git-widget-placeholder": "master",
     "go.import.settings.migrated": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/gabriel.b-hansen/ogdans3/git/mockups/src/lib/components/mock-video/timeline",
+    "last_opened_file_path": "/Users/gabriel.b-hansen/ogdans3/git/mockups/src/lib/stores",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -67,8 +66,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/lib/components/mock-video/timeline" />
       <recent name="$PROJECT_DIR$/src/lib/stores" />
+      <recent name="$PROJECT_DIR$/src/lib/components/mock-video/timeline" />
       <recent name="$PROJECT_DIR$/src/lib/components" />
       <recent name="$PROJECT_DIR$/src/lib/components/ui" />
       <recent name="$PROJECT_DIR$/static" />

@@ -5,6 +5,7 @@
     import {get, derived} from "svelte/store";
     import {zeroVec} from "../Animation";
     import {videoPlaying, videoController, currentPlayheadTime} from "../../../stores/video.svelte";
+    import {tracks} from "../../../stores/tracks.svelte";
     import TrackComponent from "../Track.svelte";
     import PlayheadComponent from "./Playhead.svelte";
     import fromBottom from "$lib/animations/FromBottom.json";
@@ -15,7 +16,6 @@
         endTime?: number;
     }>();
     let startTime = 0;
-    let tracks = $state<Track[]>([]);
     let mouseHoverPosition = $state<number | null>(null);
 
     function clampToTimeline(t: number) {
@@ -53,15 +53,15 @@
         };
         const first = createAnimationForTrack(track, 0);
         track.animations = [first];
-        tracks = [...tracks, track];
+        tracks.push(track);
     }
 
     function addAnimation(trackId: string) {
         const track = tracks.find((t) => t.id === trackId);
         if (!track) return;
-        const anim = createAnimationForTrack(track, track.animations.length);
-        track.animations = [...track.animations, anim];
-        tracks = [...tracks];
+        const anim = createAnimationForTrack2(track, track.animations.length);
+        //track.animations = [...track.animations, anim];
+        track.animations.push(anim);
     }
 
     const labelColWidth = 160;
