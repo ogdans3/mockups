@@ -77,14 +77,15 @@
             playheadX.set(calculateX(time), {duration: 0});
         });
     }
-
     playheadX.subscribe((val) => {
-        const time = calculateTime(val);
-        if (isNaN(time)) {
+        const _time = calculateTime(val);
+        if (isNaN(_time)) {
             return;
         }
-        globalPlayheadTime.set(time);
-        currentPlayheadTime = time;
+        if (time === undefined) {
+            globalPlayheadTime.set(_time);
+        }
+        currentPlayheadTime = _time;
     });
 
     function animationFinished() {

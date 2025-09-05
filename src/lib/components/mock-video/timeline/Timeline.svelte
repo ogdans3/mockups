@@ -59,11 +59,64 @@
         setTransformControlsFromPlayhead();
     }
 
+    /*
     function addAnimation(trackId: string) {
         const track = tracks.find((t) => t.id === trackId);
         if (!track) return;
         const anim = createAnimationForTrack2(track, track.animations.length);
         //track.animations = [...track.animations, anim];
+        track.animations.push(anim);
+    }
+    */
+
+    function addAnimation(trackId: string) {
+        const track = tracks.find((t) => t.id === trackId);
+        if (!track) return;
+
+        const playhead = get(get(videoController).playheadAnimateFrom);
+        const videoEnd = get(get(videoController).endTime);
+
+        let start = clampToTimeline(playhead);
+        let end = clampToTimeline(start + DEFAULT_DURATION);
+
+        console.log(track);
+        if (track.animations.length > 0) {
+            // Find the next animation after the playhead
+            const nextAnim = track.animations.find((a) => a.start > playhead);
+
+            if (nextAnim) {
+                end = Math.min(nextAnim.start, start + DEFAULT_DURATION, videoEnd);
+            } else {
+                end = Math.min(start + DEFAULT_DURATION, videoEnd);
+            }
+        } else {
+            // No animations yet → default to 2s or until end
+            end = Math.min(start + DEFAULT_DURATION, videoEnd);
+        }
+
+        const anim: Animation = {
+            id: uuid(),
+            name: `Animation ${track.animations.length + 1}`,
+            start,
+            end,
+            keyframes: [
+                {
+                    id: uuid(),
+                    time: 0,
+                    position: zeroVec(),
+                    rotation: zeroVec(),
+                    opacity: 0,
+                },
+                {
+                    id: uuid(),
+                    time: end - start,
+                    position: zeroVec(),
+                    rotation: zeroVec(),
+                    opacity: 0,
+                },
+            ],
+        };
+
         track.animations.push(anim);
     }
 
