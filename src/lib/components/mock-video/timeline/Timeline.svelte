@@ -212,8 +212,10 @@
     <div class="overflow-hidden relative px-4"
     >
         <!-- Ticks -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_interactive_supports_focus -->
         <div class="rounded-md ring-1 ring-surface-700/40 bg-surface-900/40"
-             role="graphics-object"
+             role="button"
              onclick={clickTimeline}
              onmousemove={handleMouseMove}
              onmouseleave={handleMouseLeave}
@@ -224,7 +226,7 @@
                         <div class="flex h-full w-full relative">
                             <!-- All ticks except the last one -->
                             {#each ticks as tick, i}
-                                <div class="flex flex-col items-start"
+                                <div class="flex flex-col items-start select-none"
                                      style:width={i === ticks.length - 1 ? 0 + "px": tickWidth + "px"}
                                 >
                                     <div class={tick.type === "major" ? "h-full border-l border-surface-400" : "h-1/2 border-l border-surface-600"}>
@@ -261,27 +263,28 @@
             </div>
         </div>
 
-        <!-- Controls per track: separate row with buttons -->
-        <div class="mt-3 space-y-2">
-            {#each tracks as track (track.id)}
-                <div class="flex items-center justify-between">
-                    <div class="text-xs text-surface-400">
-                        {track.phoneName}
-                    </div>
-                    <button
-                            class="px-2 py-1 rounded-md bg-secondary-600 text-white text-xs font-medium hover:bg-secondary-500"
-                            onclick={() => addAnimation(track.id)}
-                    >
-                        Add animation
-                    </button>
-                </div>
-            {/each}
-        </div>
-
-        <PlayheadComponent {startTime} {endTime} {rulerContainerWidth}/>
         <PlayheadComponent time={mouseHoverPosition} color="bg-blue-500" {startTime} {endTime}
                            {rulerContainerWidth}/>
+        <PlayheadComponent {startTime} {endTime} {rulerContainerWidth}/>
     </div>
+
+    <!-- Controls per track: separate row with buttons -->
+    <div class="mt-3 space-y-2">
+        {#each tracks as track (track.id)}
+            <div class="flex items-center justify-between">
+                <div class="text-xs text-surface-400">
+                    {track.phoneName}
+                </div>
+                <button
+                        class="px-2 py-1 rounded-md bg-secondary-600 text-white text-xs font-medium hover:bg-secondary-500"
+                        onclick={() => addAnimation(track.id)}
+                >
+                    Add animation
+                </button>
+            </div>
+        {/each}
+    </div>
+
 </div>
 
 <style>

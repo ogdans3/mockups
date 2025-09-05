@@ -5,11 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dd45db57-d02b-40ad-8892-f4ff25c754dd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Playhead.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/components/ThreeScene.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/ThreeScene.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/MockVideo.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/MockVideo.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/Timeline.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Timeline.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/stores/playhead.svelte.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/stores/playhead.svelte.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Playhead.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Playhead.svelte" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Timeline.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Timeline.svelte" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/stores/settings.svelte.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/stores/settings.svelte.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/stores/video.svelte.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/stores/video.svelte.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

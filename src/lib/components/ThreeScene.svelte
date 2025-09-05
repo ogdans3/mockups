@@ -53,11 +53,6 @@
         // Video texture
         video = document.createElement("video");
         video.src = "/iphone-recording.mov"; // must be in static/
-        video.loop = true;
-        video.muted = true;
-        video.autoplay = true;
-        video.playsInline = true;
-        video.play();
         get(videoController).setVideo(video);
 
         const videoTexture = new THREE.VideoTexture(video);

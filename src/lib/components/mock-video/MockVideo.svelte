@@ -61,7 +61,7 @@
     function handleKeydown(e: KeyboardEvent) {
         if (e.code === "Space") {
             e.preventDefault();
-            console.log("Space pressed!");
+            get(videoController).toggle();
         }
     }
 
