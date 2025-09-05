@@ -2,10 +2,9 @@
     import {onMount} from "svelte";
     import * as THREE from "three";
     import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
-    import {playheadPosition} from "$lib/stores/playhead.svelte";
     import {videoController} from "$lib/stores/video.svelte";
     import type {Track, Animation, Vec3} from "$lib/components/mock-video/Animation";
-    import {lerp, lerpVec3} from "$lib/utils/curves";
+    import {lerpVec3} from "$lib/utils/curves";
     import {zeroVec} from "$lib/components/mock-video/Animation";
     import {get} from "svelte/store";
     import {tracks} from "$lib/stores/tracks.svelte";

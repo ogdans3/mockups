@@ -1,10 +1,8 @@
-import {tick} from 'svelte';
 import {writable, readable, derived, get} from 'svelte/store';
-import {playheadPosition, playheadPosition2} from "./playhead.svelte";
 import {settings} from "./settings.svelte";
+import {setTransformControlsFromPlayhead} from "./tracks.svelte";
 
 export class VideoController {
-    // store holding the playing state
     public video: HTMLVideoElement | null = null;
     public playing = writable(false);
     public endTime = writable(10);
@@ -32,6 +30,7 @@ export class VideoController {
         if (this.video) {
             this.video.currentTime = time;
         }
+        setTransformControlsFromPlayhead();
     }
 
     async play() {

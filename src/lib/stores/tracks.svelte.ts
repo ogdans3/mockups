@@ -7,21 +7,43 @@ import {writable} from 'svelte/store';
 
 export let tracks = $state<Track[]>([]);
 
-export function setTransformControlsFromAnimation(anim: Animation) {
+export function setTransformControlsFromPlayhead() {
     const playhead = get(currentPlayheadTime);
+
+    let closestAnim: { anim: any; dist: number } | null = null;
+
+    // Find the animation whose start/end is closest to the playhead
+    for (const track of tracks) {
+        for (const anim of track.animations) {
+            // If inside animation, distance = 0
+            let dist = 0;
+            if (playhead < anim.start) {
+                dist = anim.start - playhead;
+            } else if (playhead > anim.end) {
+                dist = playhead - anim.end;
+            }
+
+            if (!closestAnim || dist < closestAnim.dist) {
+                closestAnim = {anim, dist};
+            }
+        }
+    }
+
+    if (!closestAnim) return; // no animations at all
+    const anim = closestAnim.anim;
     const localTime = playhead - anim.start;
 
     const firstKf = anim.keyframes[0];
     const lastKf = anim.keyframes[anim.keyframes.length - 1];
 
-    // Clamp before first keyframe
+    // Before first keyframe → clamp
     if (localTime <= firstKf.time) {
         transformControlPosition.set(firstKf.position);
         transformControlRotation.set(firstKf.rotation);
         return;
     }
 
-    // Clamp after last keyframe
+    // After last keyframe → clamp
     if (localTime >= lastKf.time) {
         transformControlPosition.set(lastKf.position);
         transformControlRotation.set(lastKf.rotation);

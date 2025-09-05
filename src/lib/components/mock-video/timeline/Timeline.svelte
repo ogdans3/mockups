@@ -5,7 +5,7 @@
     import {get, derived} from "svelte/store";
     import {zeroVec} from "../Animation";
     import {videoPlaying, videoController, currentPlayheadTime} from "../../../stores/video.svelte";
-    import {tracks, setTransformControlsFromAnimation} from "../../../stores/tracks.svelte";
+    import {tracks, setTransformControlsFromPlayhead} from "../../../stores/tracks.svelte";
     import TrackComponent from "../Track.svelte";
     import PlayheadComponent from "./Playhead.svelte";
     import fromBottom from "$lib/animations/FromBottom.json";
@@ -56,7 +56,7 @@
         track.animations = [first];
         tracks.push(track);
 
-        setTransformControlsFromAnimation(first);
+        setTransformControlsFromPlayhead();
     }
 
     function addAnimation(trackId: string) {
