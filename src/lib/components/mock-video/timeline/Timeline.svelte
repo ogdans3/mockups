@@ -212,7 +212,7 @@
         </div>
     </div>
 
-    <div class="overflow-hidden relative px-4"
+    <div class="relative px-4"
     >
         <!-- Ticks -->
         <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -266,9 +266,9 @@
             </div>
         </div>
 
-        <PlayheadComponent time={mouseHoverPosition} color="bg-blue-500" {startTime} {endTime}
+        <PlayheadComponent showTime={true} time={mouseHoverPosition} color="bg-blue-500" {startTime} {endTime}
                            {rulerContainerWidth}/>
-        <PlayheadComponent {startTime} {endTime} {rulerContainerWidth}/>
+        <PlayheadComponent showTime={false} {startTime} {endTime} {rulerContainerWidth}/>
     </div>
 
     <!-- Controls per track: separate row with buttons -->

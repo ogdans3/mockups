@@ -2,7 +2,7 @@
     import {tweened} from "svelte/motion";
     import {get} from "svelte/store";
     import {tick} from "svelte";
-    import {videoController, currentPlayheadTime} from "../../../stores/video.svelte";
+    import {videoController, currentPlayheadTime as globalPlayheadTime} from "../../../stores/video.svelte";
     import {cn} from "../../../utils/cn";
     import {linear} from "svelte/easing";
 
@@ -12,7 +12,8 @@
         startTime,
         endTime,
         rulerContainerWidth,
-        time
+        time,
+        showTime,
     } = $props();
 
     // tweened store for playhead position
@@ -20,6 +21,7 @@
         duration: 0,
         easing: linear
     });
+    let currentPlayheadTime = $state(0);
 
     function calculateX(t: number) {
         return (
@@ -81,7 +83,8 @@
         if (isNaN(time)) {
             return;
         }
-        currentPlayheadTime.set(time);
+        globalPlayheadTime.set(time);
+        currentPlayheadTime = time;
     });
 
     function animationFinished() {
@@ -90,10 +93,23 @@
 </script>
 
 {#if time !== null}
-    <div class={cn(
-    "absolute left-0 right-0 top-0 bottom-0 mx-4 pointer-events-none",
-    className
-  )}>
+    <div
+            class={cn(
+            "absolute left-0 right-0 top-0 bottom-0 mx-4 pointer-events-none",
+            className
+        )}
+    >
+        {#if showTime}
+            <!-- Time label above playhead -->
+            <div
+                    class="absolute -top-5 text-[10px] text-surface-200 bg-surface-800/90 px-1 rounded pointer-events-none"
+                    style:transform={`translateX(${$playheadX}px) translateX(-50%)`}
+            >
+                {currentPlayheadTime.toFixed(2)}s
+            </div>
+        {/if}
+
+        <!-- Playhead line -->
         <div
                 class={cn("absolute top-0 bottom-0 w-[1px] pointer-events-none", color)}
                 style:transform={`translateX(${$playheadX}px)`}
