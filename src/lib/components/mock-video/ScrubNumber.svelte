@@ -1,151 +1,136 @@
 <script lang="ts">
-    export let value = 0;
-    export let min: number = Number.NEGATIVE_INFINITY;
-    export let max: number = Number.POSITIVE_INFINITY;
-    export let step = 0.1;
-    export let precision = 2;
-    export let pixelsPerStep = 8;
-    export let label = '';
-    export let units = '';
-    export let disabled = false;
-    export let wheel = true;
-    export let id: string = `scrub-${Math.random().toString(36).slice(2)}`;
+    import {videoController} from "$lib/stores/video.svelte";
+    import {get} from "svelte/store";
 
+    let {
+        value = $bindable(0),   // ✅ bindable prop
+        min = Number.NEGATIVE_INFINITY,
+        max = Number.POSITIVE_INFINITY,
+        step = 0.1,
+        precision = 2,
+        pixelsPerStep = 8,
+        label = "",
+        units = "",
+        disabled = false,
+        wheel = true,
+        id = `scrub-${Math.random().toString(36).slice(2)}`
+    } = $props();
+
+    let dragging = $state(false);
+    let startX = $state(0);
+    let startVal = $state(0);
     let el: HTMLInputElement | null = null;
-    let dragging = false;
-    let startX = 0;
-    let startVal = 0;
 
-    $: minAttr = Number.isFinite(min) ? min : undefined;
-    $: maxAttr = Number.isFinite(max) ? max : undefined;
+    const minAttr = $derived(Number.isFinite(min) ? min : undefined);
+    const maxAttr = $derived(Number.isFinite(max) ? max : undefined);
 
-    const clamp = (v: number) => {
-        return Math.min(max, Math.max(min, v));
-    };
-
+    const clamp = (v: number) => Math.min(max, Math.max(min, v));
     const roundTo = (v: number, p: number) => {
         const f = Math.pow(10, p);
         return Math.round(v * f) / f;
     };
-
     const snap = (v: number) => {
-        if (!Number.isFinite(step) || step <= 0) {
-            return v;
-        }
+        if (!Number.isFinite(step) || step <= 0) return v;
         return Math.round(v / step) * step;
     };
 
-    const setVal = (v: number) => {
+    function setVal(v: number) {
         value = roundTo(clamp(v), precision);
-    };
+    }
+
+    // ✅ Always enforce fixed decimals in the input field
+    $effect(() => {
+        if (el) {
+            el.value = value.toFixed(precision);
+        }
+    });
 
     function onPointerDown(e: PointerEvent) {
-        if (disabled || e.button !== 0) {
-            return;
-        }
+        if (disabled || e.button !== 0) return;
+
+        // Pause video when editing
+        get(videoController).pause();
 
         dragging = true;
         startX = e.clientX;
         startVal = value ?? 0;
 
         (e.target as HTMLElement)?.setPointerCapture(e.pointerId);
-        document.body.style.cursor = 'ew-resize';
-
+        document.body.style.cursor = "ew-resize";
         e.preventDefault();
     }
 
     function onPointerMove(e: PointerEvent) {
-        if (!dragging) {
-            return;
-        }
+        if (!dragging) return;
 
         const dx = e.clientX - startX;
-
         let mult = 10;
-        if (e.shiftKey) {
-            mult = 1;
-        } else if (e.altKey || e.ctrlKey) {
-            mult = 0.1;
-        }
+        if (e.shiftKey) mult = 1;
+        else if (e.altKey || e.ctrlKey) mult = 0.1;
 
         const delta = (dx / pixelsPerStep) * step * mult;
         setVal(snap(startVal + delta));
     }
 
     function endDrag(e: PointerEvent) {
-        if (!dragging) {
-            return;
-        }
-
+        if (!dragging) return;
         dragging = false;
 
         try {
             (e.target as HTMLElement)?.releasePointerCapture(e.pointerId);
         } catch {
-            // ignore
         }
-
-        document.body.style.cursor = '';
+        document.body.style.cursor = "";
     }
 
     function onKeyDown(e: KeyboardEvent) {
-        if (disabled) {
-            return;
-        }
+        if (disabled) return;
 
         let mult = 1;
-        if (e.shiftKey) {
-            mult = 10;
-        } else if (e.altKey || e.ctrlKey) {
-            mult = 0.1;
-        }
+        if (e.shiftKey) mult = 10;
+        else if (e.altKey || e.ctrlKey) mult = 0.1;
 
-        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") {
             setVal(snap(value + step * mult));
             e.preventDefault();
-        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
             setVal(snap(value - step * mult));
             e.preventDefault();
-        } else if (e.key === 'PageUp') {
+        } else if (e.key === "PageUp") {
             setVal(snap(value + step * 10));
             e.preventDefault();
-        } else if (e.key === 'PageDown') {
+        } else if (e.key === "PageDown") {
             setVal(snap(value - step * 10));
             e.preventDefault();
-        } else if (e.key === 'Home' && Number.isFinite(min)) {
+        } else if (e.key === "Home" && Number.isFinite(min)) {
             setVal(min);
             e.preventDefault();
-        } else if (e.key === 'End' && Number.isFinite(max)) {
+        } else if (e.key === "End" && Number.isFinite(max)) {
             setVal(max);
             e.preventDefault();
         }
     }
 
     function onWheel(e: WheelEvent) {
-        if (!wheel || disabled) {
-            return;
-        }
-
+        if (!wheel || disabled) return;
         e.preventDefault();
 
         const dir = Math.sign(e.deltaY);
         let mult = 1;
-
-        if (e.shiftKey) {
-            mult = 10;
-        } else if (e.altKey || e.ctrlKey) {
-            mult = 0.1;
-        }
+        if (e.shiftKey) mult = 10;
+        else if (e.altKey || e.ctrlKey) mult = 0.1;
 
         setVal(snap(value - dir * step * mult));
     }
 
     function onInput(e: Event) {
+        // Pause video when typing
+        get(videoController).pause();
+
         const t = e.target as HTMLInputElement;
         const v = t.valueAsNumber;
-
         if (Number.isFinite(v)) {
-            value = v;
+            setVal(v);
         }
     }
 
@@ -162,7 +147,7 @@
         aria-valuemin={minAttr}
         aria-valuemax={maxAttr}
         aria-valuenow={value}
-        aria-valuetext={`${value}${units ? ' ' + units : ''}`}
+        aria-valuetext={`${value.toFixed(precision)}${units ? " " + units : ""}`}
         aria-disabled={disabled}
 >
     <!-- Editable input -->
@@ -170,14 +155,15 @@
         <input
                 bind:this={el}
                 id={id}
-                class="w-full h-9 rounded-t-md bg-surface-800/70 px-2.5 pr-8
-             text-sm tabular-nums text-right
-             ring-1 ring-surface-700
-             focus-visible:outline-none
-             focus-visible:ring-2 focus-visible:ring-primary-400
-             disabled:opacity-50 disabled:cursor-not-allowed
-             [caret-color:theme(colors.primary.400)]
-             transition-colors duration-150"
+                class="w-full h-9 rounded-t-md bg-surface-800/70 pl-2.5
+           {units ? 'pr-5' : 'pr-2.5'}
+           text-sm tabular-nums text-right
+           ring-1 ring-surface-700
+           focus-visible:outline-none
+           focus-visible:ring-2 focus-visible:ring-primary-400
+           disabled:opacity-50 disabled:cursor-not-allowed
+           [caret-color:theme(colors.primary.400)]
+           transition-colors duration-150"
                 type="number"
                 {minAttr}
                 {maxAttr}
@@ -192,7 +178,7 @@
         {#if units}
             <span
                     class="pointer-events-none absolute inset-y-0 right-2.5 inline-flex
-               items-center text-xs text-surface-400"
+                       items-center text-xs text-surface-400"
                     aria-hidden="true"
             >
                 {units}
@@ -204,9 +190,9 @@
     {#if label}
         <div
                 class="w-full h-6 flex items-center justify-center
-             rounded-b-md bg-surface-700/40 text-xs font-semibold
-             uppercase text-surface-300 cursor-ew-resize select-none
-             hover:bg-surface-600/40 active:bg-surface-500/40 transition-colors"
+                   rounded-b-md bg-surface-700/40 text-xs font-semibold
+                   uppercase text-surface-300 cursor-ew-resize select-none
+                   hover:bg-surface-600/40 active:bg-surface-500/40 transition-colors"
                 on:pointerdown={onPointerDown}
                 on:pointermove={onPointerMove}
                 on:pointerup={endDrag}
@@ -221,7 +207,7 @@
         <div
                 class="absolute -top-8 right-2.5 px-2 py-1 rounded bg-surface-900 text-xs text-white shadow"
         >
-            {value}{units}
+            {value.toFixed(precision)}{units}
         </div>
     {/if}
 </div>

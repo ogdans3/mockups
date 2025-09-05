@@ -38,8 +38,8 @@
             start,
             end,
             keyframes: [
-                {id: uuid(), time: start, position: zeroVec(), rotation: zeroVec(), opacity: 0},
-                {id: uuid(), time: end, position: zeroVec(), rotation: zeroVec(), opacity: 0},
+                {id: uuid(), time: 0, position: zeroVec(), rotation: zeroVec(), opacity: 0},
+                {id: uuid(), time: end - start, position: zeroVec(), rotation: zeroVec(), opacity: 0},
             ],
         };
     }

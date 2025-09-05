@@ -38,8 +38,6 @@
                 {#each axes as axis}
                     <ScrubNumber
                             bind:value={$transformControlPosition[axis]}
-                            min={axis === 'z' ? -5 : -2}
-                            max={axis === 'z' ? 5 : 2}
                             step={0.1}
                             precision={2}
                             pixelsPerStep={8}

@@ -4,16 +4,34 @@
     import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
     import {playheadPosition} from "$lib/stores/playhead.svelte";
     import {videoController} from "$lib/stores/video.svelte";
+    import type {Track, Animation, Vec3} from "$lib/components/mock-video/Animation";
+    import {zeroVec} from "$lib/components/mock-video/Animation";
     import {get} from "svelte/store";
+    import {tracks} from "$lib/stores/tracks.svelte";
+    import {currentPlayheadTime} from "$lib/stores/video.svelte";
+    import {transformControlPosition, transformControlRotation} from "$lib/stores/transform.svelte";
 
     import config from "../../models/iphone-1.model.json";
 
-    export let pos = {x: 0, y: 0, z: 0};
-    export let rot = {x: 0, y: 0, z: 0};
-    export let background: string | number = "#000000";
-    export let width: number = 1000;
-    export let height: number = 1080;
+    function lerp(a: number, b: number, t: number) {
+        return a + (b - a) * t;
+    }
 
+    function lerpVec3(a: Vec3, b: Vec3, t: number): Vec3 {
+        return {
+            x: lerp(a.x, b.x, t),
+            y: lerp(a.y, b.y, t),
+            z: lerp(a.z, b.z, t),
+        };
+    }
+
+    const {
+        pos = zeroVec(),
+        rot = zeroVec(),
+        background = "#000000",
+        width = 1000,
+        height = 1080,
+    } = $props();
     const basePos = config.defaultPosition || {x: 0, y: 0, z: 0};
     const baseRot = config.defaultRotation || {x: 0, y: 0, z: 0};
 
@@ -66,7 +84,6 @@
 
             const box = new THREE.Box3().setFromObject(model);
             const center = box.getCenter(new THREE.Vector3());
-            console.log(center);
             model.position.sub(center);
             scene.add(model);
 
@@ -96,11 +113,37 @@
             renderer.setSize(container.clientWidth, container.clientHeight);
         });
 
-        // Animate
-        function animate() {
-            requestAnimationFrame(animate);
-            if (model) {
-                // ✅ Apply base + offset (degrees → radians)
+        animate();
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+    });
+
+    function animate() {
+        if (model) {
+            if (get(videoController).isPlaying) {
+                // ✅ Playing → use keyframes
+                const time = $currentPlayheadTime;
+                const {pos, rot} = getInterpolatedTransform(time);
+
+                model.position.set(
+                    basePos.x + pos.x,
+                    basePos.y + pos.y,
+                    basePos.z + pos.z
+                );
+                model.rotation.set(
+                    deg2rad(baseRot.x + rot.x),
+                    deg2rad(baseRot.y + rot.y),
+                    deg2rad(baseRot.z + rot.z)
+                );
+
+                // ✅ Keep transform controls in sync with lerped values
+                transformControlPosition.set(pos);
+                transformControlRotation.set(rot);
+            } else {
+                // ✅ Paused → use transform controls directly
+                const pos = get(transformControlPosition);
+                const rot = get(transformControlRotation);
+
                 model.position.set(
                     basePos.x + pos.x,
                     basePos.y + pos.y,
@@ -112,25 +155,57 @@
                     deg2rad(baseRot.z + rot.z)
                 );
             }
-            renderer.render(scene, camera);
         }
 
-        animate();
-        resizeCanvas();
-        window.addEventListener("resize", resizeCanvas);
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+    }
+
+    function getInterpolatedTransform(time: number): { pos: Vec3; rot: Vec3 } {
+        const track = tracks[0];
+        if (!track) return {pos: zeroVec(), rot: zeroVec()};
+
+        const anim = track.animations.find(a => time >= a.start && time <= a.end);
+        if (!anim) return {pos: zeroVec(), rot: zeroVec()};
+
+        const localTime = time - anim.start;
+
+        let prev = anim.keyframes[0];
+        let next = anim.keyframes[anim.keyframes.length - 1];
+
+        for (let i = 0; i < anim.keyframes.length - 1; i++) {
+            const kf1 = anim.keyframes[i];
+            const kf2 = anim.keyframes[i + 1];
+            if (localTime >= kf1.time && localTime <= kf2.time) {
+                prev = kf1;
+                next = kf2;
+                break;
+            }
+        }
+
+        const span = next.time - prev.time;
+        const t = span > 0 ? (localTime - prev.time) / span : 0;
+
+        return {
+            pos: lerpVec3(prev.position, next.position, t),
+            rot: lerpVec3(prev.rotation, next.rotation, t),
+        };
+    }
+
+    $effect(() => {
+        if (scene) {
+            scene.background = new THREE.Color(background);
+        }
     });
 
-    $: if (scene) {
-        scene.background = new THREE.Color(background);
-    }
-
-    $: if (renderer && camera) {
-        console.log(width, height);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
-        resizeCanvas();
-    }
+    $effect(() => {
+        if (renderer && camera) {
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+            resizeCanvas();
+        }
+    });
 
     function resizeCanvas() {
         if (!renderer || !container) return;
