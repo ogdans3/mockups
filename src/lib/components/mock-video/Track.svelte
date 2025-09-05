@@ -161,6 +161,18 @@
             keyframe.rotation = rotation;
         });
     }
+
+    function deleteAnimation(anim: Animation, e: MouseEvent) {
+        e.preventDefault();
+        const del = confirm("Delete this animation?");
+        if (del) {
+            track.animations = track.animations.filter((a) => a.id !== anim.id);
+            window.removeEventListener("mousemove", onDrag);
+            window.removeEventListener("mouseup", stopDrag);
+            draggingIndex = null;
+            dragMode = null;
+        }
+    }
 </script>
 
 <div
@@ -173,9 +185,12 @@
          transition-colors"
 >
     {#each track.animations as anim, i (anim.id)}
+        <!-- svelte-ignore a11y_interactive_supports_focus -->
         <div
+                role="button"
                 class="absolute top-0 h-full flex items-stretch bg-primary-500/40 rounded-md"
                 style={`left:${leftFor(anim.start)}px;width:${widthFor(anim)}px;`}
+                oncontextmenu={(e) => deleteAnimation(anim, e)}
         >
             <!-- Left resize handle -->
             <div
