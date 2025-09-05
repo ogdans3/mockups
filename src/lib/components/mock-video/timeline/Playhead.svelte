@@ -2,7 +2,7 @@
     import {tweened} from "svelte/motion";
     import {get} from "svelte/store";
     import {tick} from "svelte";
-    import {videoController} from "../../../stores/video.svelte";
+    import {videoController, currentPlayheadTime} from "../../../stores/video.svelte";
     import {cn} from "../../../utils/cn";
     import {linear} from "svelte/easing";
 
@@ -75,6 +75,14 @@
             playheadX.set(calculateX(time), {duration: 0});
         });
     }
+
+    playheadX.subscribe((val) => {
+        const time = calculateTime(val);
+        if (isNaN(time)) {
+            return;
+        }
+        currentPlayheadTime.set(time);
+    });
 
     function animationFinished() {
         get(videoController).playbackEnded();

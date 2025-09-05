@@ -7,6 +7,7 @@
     import Timeline from '$lib/components/mock-video/timeline/Timeline.svelte';
     import {transformControlPosition, transformControlRotation} from "../../stores/transform.svelte";
     import {videoController, VideoController} from "../../stores/video.svelte";
+    import {settings} from "../../stores/settings.svelte";
 
     type Axis = 'x' | 'y' | 'z';
     let background = '#111111';
@@ -67,7 +68,9 @@
 
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
-        get(videoController).toggle();
+        if (settings.autoplay) {
+            get(videoController).toggle();
+        }
     });
     onDestroy(() => {
         return () => window.removeEventListener("keydown", handleKeydown);

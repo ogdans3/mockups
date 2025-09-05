@@ -1,10 +1,13 @@
 <script lang="ts">
-    import type {Track, Animation, Vec3} from "./Animation";
+    import {getAnimation} from "./Animation";
+    import type {Track, Animation, Keyframe, Vec3} from "./Animation";
     import {createEventDispatcher} from "svelte";
     import {get} from "svelte/store";
     import {selectedAnimationKeyframe, selectedAnimationStore} from "../../stores/animation.svelte";
     import {transformControlPosition, transformControlRotation} from "../../stores/transform.svelte";
-    import {playheadPosition} from "../../stores/playhead.svelte";
+    import {videoController} from "../../stores/video.svelte";
+
+    //TODO: Refactor this uglyness
 
     let {track = $bindable(), startTime, endTime, pxPerSecond}:
         {
@@ -31,26 +34,31 @@
     let dragStartX = 0;
     let originalStart = 0;
     let originalEnd = 0;
+    let originalKeyframes: Keyframe[] = [];
 
     function startDrag(
         e: MouseEvent,
-        anim: Animation,
+        animationId: string,
         index: number,
         mode: DragMode
     ) {
         e.preventDefault();
         e.stopPropagation();
+        const animation = getAnimation(track, animationId);
         draggingIndex = index;
         dragMode = mode;
         dragStartX = e.clientX;
-        originalStart = anim.start;
-        originalEnd = anim.end;
+        originalStart = animation.start;
+        originalEnd = animation.end;
+        originalKeyframes = animation.keyframes.map(kf => ({...kf}));
 
         window.addEventListener("mousemove", onDrag);
         window.addEventListener("mouseup", stopDrag);
     }
 
     function onDrag(e: MouseEvent) {
+        e.preventDefault();
+        e.stopPropagation();
         if (draggingIndex === null || !dragMode) return;
 
         const deltaPx = e.clientX - dragStartX;
@@ -85,14 +93,42 @@
         );
     }
 
-    function stopDrag() {
+    function stopDrag(e: MouseEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (draggingIndex === null) return;
+
+        const anim = track.animations[draggingIndex];
+        const oldDuration = originalEnd - originalStart;
+        const newDuration = anim.end - anim.start;
+
+        anim.keyframes = originalKeyframes.map((kf) => {
+            // absolute time before drag
+            const absTime = originalStart + kf.time;
+
+            // if duration changed, scale relative position
+            let newTime: number;
+            if (oldDuration > 0) {
+                const rel = (absTime - originalStart) / oldDuration; // 0..1
+                newTime = rel * newDuration;
+            } else {
+                newTime = 0;
+            }
+
+            return {...kf, time: newTime};
+        });
+
         draggingIndex = null;
         dragMode = null;
+
         window.removeEventListener("mousemove", onDrag);
         window.removeEventListener("mouseup", stopDrag);
     }
 
-    function toggleKeyframe(animation: Animation, keyframeIndex: 0 | 1) {
+    function toggleKeyframe(e: MouseEvent, animationId: string, keyframeIndex: 0 | 1) {
+        e.preventDefault();
+        e.stopPropagation();
+        const animation = getAnimation(track, animationId);
         const keyframe = animation.keyframes[keyframeIndex];
         if (get(selectedAnimationStore)?.id === animation.id && get(selectedAnimationKeyframe)?.id === keyframe.id) {
             selectedAnimationStore.set(null);
@@ -102,7 +138,7 @@
         selectedAnimationStore.set(animation);
         selectedAnimationKeyframe.set(keyframe);
 
-        playheadPosition.set(keyframe.time);
+        get(videoController).setPlayheadPosition(animation.start + keyframe.time);
         transformControlPosition.subscribe((position: Vec3) => {
             if (animation.id !== get(selectedAnimationStore)?.id) {
                 return;
@@ -144,7 +180,7 @@
                     tabindex="0"
                     aria-label="Click and drag to extend"
                     class="w-2 cursor-ew-resize"
-                    onmousedown={(e) => startDrag(e, anim, i, "resize-left")}
+                    onmousedown={(e) => startDrag(e, anim.id, i, "resize-left")}
             ></div>
 
             <!-- Keyframe button (start) -->
@@ -152,7 +188,7 @@
                     class="w-6 h-full flex items-center justify-center"
                     aria-label="Set start keyframe"
                     title="Set start keyframe"
-                    onclick={() => toggleKeyframe(anim, 0)}
+                    onclick={(e) => toggleKeyframe(e, anim.id, 0)}
             >
                 <span
                         class="w-4 h-4 rounded-full transition-colors"
@@ -167,7 +203,7 @@
                     aria-label="Click and drag to move"
                     role="button"
                     class="flex-1 flex items-center justify-center cursor-grab active:cursor-grabbing select-none text-xs text-surface-100"
-                    onmousedown={(e) => startDrag(e, anim, i, "move")}
+                    onmousedown={(e) => startDrag(e, anim.id, i, "move")}
             >
                 <span class="truncate px-1">{anim.name}</span>
             </div>
@@ -177,7 +213,7 @@
                     class="w-6 h-full flex items-center justify-center"
                     aria-label="Set end keyframe"
                     title="Set end keyframe"
-                    onclick={() => toggleKeyframe(anim, 1)}
+                    onclick={(e) => toggleKeyframe(e, anim.id, 1)}
             >
                 <span
                         class="w-4 h-4 rounded-full transition-colors"
@@ -192,7 +228,7 @@
                     aria-label="Click and drag to extend"
                     role="button"
                     class="w-2 cursor-ew-resize"
-                    onmousedown={(e) => startDrag(e, anim, i, "resize-right")}
+                    onmousedown={(e) => startDrag(e, anim.id, i, "resize-right")}
             ></div>
         </div>
     {/each}

@@ -80,3 +80,5 @@ export const videoPlaying = derived(videoController, ($controller, set) => {
     const unsubscribe = $controller.playing.subscribe(set);
     return () => unsubscribe();
 });
+
+export const currentPlayheadTime = writable<number>(0);

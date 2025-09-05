@@ -4,8 +4,7 @@
     import type {Track, Animation} from "../Animation";
     import {get, derived} from "svelte/store";
     import {zeroVec} from "../Animation";
-    import {playheadPosition} from "../../../stores/playhead.svelte";
-    import {videoPlaying, videoController} from "../../../stores/video.svelte";
+    import {videoPlaying, videoController, currentPlayheadTime} from "../../../stores/video.svelte";
     import TrackComponent from "../Track.svelte";
     import PlayheadComponent from "./Playhead.svelte";
 
@@ -108,8 +107,12 @@
         return arr;
     });
 
-    let currentTimeField = $state(get(playheadPosition).toFixed(2));
+    let currentTimeField = $state(get(currentPlayheadTime).toFixed(2));
     let endTimeField = $state(endTime.toFixed(2));
+
+    $effect(() => {
+        currentTimeField = $currentPlayheadTime.toFixed(2);
+    });
 
     function handleCurrentTimeInput(e: Event) {
         let val = parseFloat((e.target as HTMLInputElement).value);
@@ -117,7 +120,7 @@
             val = endTime;
         }
         if (!isNaN(val)) {
-            playheadPosition.set(val);
+            get(videoController).setPlayheadPosition(val);
             currentTimeField = val.toFixed(2);
         } else {
             currentTimeField = "";
