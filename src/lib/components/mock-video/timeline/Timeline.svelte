@@ -7,6 +7,7 @@
     import {videoPlaying, videoController, currentPlayheadTime} from "../../../stores/video.svelte";
     import TrackComponent from "../Track.svelte";
     import PlayheadComponent from "./Playhead.svelte";
+    import fromBottom from "$lib/animations/FromBottom.json";
 
     let {
         endTime = 10,
@@ -22,6 +23,10 @@
     }
 
     function createAnimationForTrack(track: Track, index: number): Animation {
+        return {...fromBottom};
+    }
+
+    function createAnimationForTrack2(track: Track, index: number): Animation {
         const last = track.animations.at(-1);
         const proposedStart = last ? last.end : startTime;
         const start = clampToTimeline(proposedStart);

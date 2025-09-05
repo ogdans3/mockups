@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dd45db57-d02b-40ad-8892-f4ff25c754dd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/lib/animations/FromBottom.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Playhead.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Playhead.svelte" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/Track.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/Track.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Timeline.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/mock-video/timeline/Timeline.svelte" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

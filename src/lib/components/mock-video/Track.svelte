@@ -138,6 +138,9 @@
         selectedAnimationStore.set(animation);
         selectedAnimationKeyframe.set(keyframe);
 
+        transformControlPosition.set(keyframe.position);
+        transformControlRotation.set(keyframe.rotation);
+
         get(videoController).setPlayheadPosition(animation.start + keyframe.time);
         transformControlPosition.subscribe((position: Vec3) => {
             if (animation.id !== get(selectedAnimationStore)?.id) {
