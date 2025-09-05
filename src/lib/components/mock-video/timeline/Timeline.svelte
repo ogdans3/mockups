@@ -1,14 +1,13 @@
 <script lang="ts">
     import {Play, Pause} from "lucide-svelte";
     import {v4 as uuid} from "uuid";
-    import type {Track, Animation} from "./Animation";
+    import type {Track, Animation} from "../Animation";
     import {get, derived} from "svelte/store";
-    import {onMount} from "svelte";
-    import {zeroVec} from "./Animation";
-    import {playheadPosition} from "../../stores/playhead.svelte";
-    import {videoPlaying, videoController} from "../../stores/video.svelte";
-    import TrackComponent from "./Track.svelte";
-    import {settings} from "$lib/stores/settings.svelte";
+    import {zeroVec} from "../Animation";
+    import {playheadPosition} from "../../../stores/playhead.svelte";
+    import {videoPlaying, videoController} from "../../../stores/video.svelte";
+    import TrackComponent from "../Track.svelte";
+    import PlayheadComponent from "./Playhead.svelte";
 
     let {
         endTime = 10,
@@ -17,6 +16,7 @@
     }>();
     let startTime = 0;
     let tracks = $state<Track[]>([]);
+    let mouseHoverPosition = $state<number | null>(null);
 
     function clampToTimeline(t: number) {
         return Math.max(startTime, Math.min(endTime, t));
@@ -134,12 +134,22 @@
         }
     }
 
-    let playheadX = $state(0);
-    playheadPosition.subscribe((currentTime) => {
-        if (endTime <= startTime || rulerContainerWidth === 0) return;
-        const progress = (currentTime - startTime) / (endTime - startTime);
-        playheadX = Math.max(0, Math.min(1, progress)) * rulerContainerWidth;
-    });
+    function handleMouseMove(e: MouseEvent) {
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const x = e.clientX - rect.left; // position inside container
+        const clampedX = Math.max(0, Math.min(rulerContainerWidth, x));
+        const time = startTime + clampedX / pxPerSecond;
+        mouseHoverPosition = time;
+    }
+
+    function handleMouseLeave() {
+        mouseHoverPosition = null;
+    }
+
+    function clickTimeline() {
+        get(videoController).setPlayheadPosition(mouseHoverPosition);
+    }
+
     addPhone();
 </script>
 
@@ -199,9 +209,15 @@
         </div>
     </div>
 
-    <div class="overflow-hidden relative px-4">
+    <div class="overflow-hidden relative px-4"
+    >
         <!-- Ticks -->
-        <div class="rounded-md ring-1 ring-surface-700/40 bg-surface-900/40">
+        <div class="rounded-md ring-1 ring-surface-700/40 bg-surface-900/40"
+             role="graphics-object"
+             onclick={clickTimeline}
+             onmousemove={handleMouseMove}
+             onmouseleave={handleMouseLeave}
+        >
             <div class="flex items-stretch border-b border-surface-700/40">
                 <div class="grow" bind:clientWidth={rulerContainerWidth}>
                     <div class="relative h-8 w-full">
@@ -262,13 +278,9 @@
             {/each}
         </div>
 
-        <!-- 🔴 Playhead -->
-        <div class="absolute left-0 right-0 top-0 bottom-0 mx-4 pointer-events-none">
-            <div
-                    class="absolute top-0 bottom-0 w-[1px] bg-red-500 pointer-events-none"
-                    style:left={playheadX + 'px'}
-            ></div>
-        </div>
+        <PlayheadComponent {startTime} {endTime} {rulerContainerWidth}/>
+        <PlayheadComponent time={mouseHoverPosition} color="bg-blue-500" {startTime} {endTime}
+                           {rulerContainerWidth}/>
     </div>
 </div>
 

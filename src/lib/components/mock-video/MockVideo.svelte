@@ -4,7 +4,7 @@
     import Sidebar from '$lib/components/mock-video/Sidebar.svelte';
     import Canvas from '$lib/components/mock-video/Canvas.svelte';
     import {zeroVec} from '$lib/components/mock-video/Animation';
-    import Timeline from '$lib/components/mock-video/Timeline.svelte';
+    import Timeline from '$lib/components/mock-video/timeline/Timeline.svelte';
     import {transformControlPosition, transformControlRotation} from "../../stores/transform.svelte";
     import {videoController, VideoController} from "../../stores/video.svelte";
 
