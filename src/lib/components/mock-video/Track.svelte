@@ -205,10 +205,10 @@
                     tabindex="0"
                     aria-label="Click and drag to move"
                     role="button"
-                    class="flex-1 flex items-center justify-center cursor-grab active:cursor-grabbing select-none text-xs text-surface-100"
+                    class="flex-1 flex items-center justify-center cursor-grab active:cursor-grabbing select-none text-xs text-surface-100 overflow-hidden"
                     onmousedown={(e) => startDrag(e, anim.id, i, "move")}
             >
-                <span class="truncate px-1">{anim.name}</span>
+                <span class="whitespace-nowrap truncate px-1">{anim.name}</span>
             </div>
 
             <!-- Keyframe button (end) -->
