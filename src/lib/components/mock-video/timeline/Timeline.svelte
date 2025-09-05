@@ -5,7 +5,7 @@
     import {get, derived} from "svelte/store";
     import {zeroVec} from "../Animation";
     import {videoPlaying, videoController, currentPlayheadTime} from "../../../stores/video.svelte";
-    import {tracks} from "../../../stores/tracks.svelte";
+    import {tracks, setTransformControlsFromAnimation} from "../../../stores/tracks.svelte";
     import TrackComponent from "../Track.svelte";
     import PlayheadComponent from "./Playhead.svelte";
     import fromBottom from "$lib/animations/FromBottom.json";
@@ -51,9 +51,12 @@
             phoneName: `Phone ${tracks.length + 1}`,
             animations: []
         };
+
         const first = createAnimationForTrack(track, 0);
         track.animations = [first];
         tracks.push(track);
+
+        setTransformControlsFromAnimation(first);
     }
 
     function addAnimation(trackId: string) {

@@ -5,6 +5,7 @@
     import {playheadPosition} from "$lib/stores/playhead.svelte";
     import {videoController} from "$lib/stores/video.svelte";
     import type {Track, Animation, Vec3} from "$lib/components/mock-video/Animation";
+    import {lerp, lerpVec3} from "$lib/utils/curves";
     import {zeroVec} from "$lib/components/mock-video/Animation";
     import {get} from "svelte/store";
     import {tracks} from "$lib/stores/tracks.svelte";
@@ -13,17 +14,6 @@
 
     import config from "../../models/iphone-1.model.json";
 
-    function lerp(a: number, b: number, t: number) {
-        return a + (b - a) * t;
-    }
-
-    function lerpVec3(a: Vec3, b: Vec3, t: number): Vec3 {
-        return {
-            x: lerp(a.x, b.x, t),
-            y: lerp(a.y, b.y, t),
-            z: lerp(a.z, b.z, t),
-        };
-    }
 
     const {
         pos = zeroVec(),
@@ -165,13 +155,54 @@
         const track = tracks[0];
         if (!track) return {pos: zeroVec(), rot: zeroVec()};
 
+        // Find the animation that covers this time OR the closest one
         const anim = track.animations.find(a => time >= a.start && time <= a.end);
-        if (!anim) return {pos: zeroVec(), rot: zeroVec()};
 
+        // If no active animation, check if we are before the first or after the last
+        if (!anim) {
+            const firstAnim = track.animations[0];
+            const lastAnim = track.animations[track.animations.length - 1];
+
+            if (time < firstAnim.start) {
+                // Before everything → clamp to first keyframe of first animation
+                const kf = firstAnim.keyframes[0];
+                return {pos: kf.position, rot: kf.rotation};
+            }
+
+            if (time > lastAnim.end) {
+                // After everything → clamp to last keyframe of last animation
+                const kf = lastAnim.keyframes[lastAnim.keyframes.length - 1];
+                return {pos: kf.position, rot: kf.rotation};
+            }
+
+            // Between animations but not inside → hold last keyframe of the previous anim
+            const prevAnim = [...track.animations].reverse().find(a => time > a.end);
+            if (prevAnim) {
+                const kf = prevAnim.keyframes[prevAnim.keyframes.length - 1];
+                return {pos: kf.position, rot: kf.rotation};
+            }
+
+            return {pos: zeroVec(), rot: zeroVec()};
+        }
+
+        // We are inside an animation
         const localTime = time - anim.start;
+        const firstKf = anim.keyframes[0];
+        const lastKf = anim.keyframes[anim.keyframes.length - 1];
 
-        let prev = anim.keyframes[0];
-        let next = anim.keyframes[anim.keyframes.length - 1];
+        // Before first keyframe → clamp
+        if (localTime <= firstKf.time) {
+            return {pos: firstKf.position, rot: firstKf.rotation};
+        }
+
+        // After last keyframe → clamp
+        if (localTime >= lastKf.time) {
+            return {pos: lastKf.position, rot: lastKf.rotation};
+        }
+
+        // Otherwise interpolate
+        let prev = firstKf;
+        let next = lastKf;
 
         for (let i = 0; i < anim.keyframes.length - 1; i++) {
             const kf1 = anim.keyframes[i];
