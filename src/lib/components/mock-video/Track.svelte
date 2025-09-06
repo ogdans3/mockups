@@ -98,15 +98,37 @@
         e.stopPropagation();
         if (draggingIndex === null) return;
 
-        const anim = track.animations[draggingIndex];
+        let anim = track.animations[draggingIndex];
         const oldDuration = originalEnd - originalStart;
+
+        // ✅ First, re-sort animations by start time
+        track.animations.sort((a, b) => a.start - b.start);
+
+        // Find the new index of the dragged animation
+        const newIndex = track.animations.findIndex(a => a.id === anim.id);
+
+        // Get true neighbors after sorting
+        const prevAnim = track.animations[newIndex - 1];
+        const nextAnim = track.animations[newIndex + 1];
+
+        // ✅ Clamp to neighbors
+        if (prevAnim && anim.start < prevAnim.end) {
+            anim.start = prevAnim.end;
+        }
+        if (nextAnim && anim.end > nextAnim.start) {
+            anim.end = nextAnim.start;
+        }
+
+        // Ensure valid duration
+        if (anim.end < anim.start + 0.1) {
+            anim.end = anim.start + 0.1;
+        }
+
         const newDuration = anim.end - anim.start;
 
+        // ✅ Rescale keyframes to new duration
         anim.keyframes = originalKeyframes.map((kf) => {
-            // absolute time before drag
             const absTime = originalStart + kf.time;
-
-            // if duration changed, scale relative position
             let newTime: number;
             if (oldDuration > 0) {
                 const rel = (absTime - originalStart) / oldDuration; // 0..1
@@ -114,9 +136,11 @@
             } else {
                 newTime = 0;
             }
-
             return {...kf, time: newTime};
         });
+
+        // Replace updated animation in track
+        track.animations[newIndex] = anim;
 
         draggingIndex = null;
         dragMode = null;
