@@ -10,6 +10,10 @@
     import TrackComponent from "../Track.svelte";
     import PlayheadComponent from "./Playhead.svelte";
     import fromBottom from "$lib/animations/FromBottom.json";
+    import animations from "$lib/animations/animations.svelte.ts";
+
+    let showAnimationDialog = $state(false);
+    let selectedTrackId: string | null = null;
 
     let startTime = 0;
     let mouseHoverPosition = $state<number | null>(null);
@@ -57,17 +61,40 @@
         setTransformControlsFromPlayhead();
     }
 
+    function openAnimationDialog(trackId: string) {
+        selectedTrackId = trackId;
+        showAnimationDialog = true;
+    }
+
+    function chooseAnimation(animDef: Animation) {
+        if (selectedTrackId) {
+            _addAnimation(selectedTrackId, animDef);
+        }
+        showAnimationDialog = false;
+        selectedTrackId = null;
+    }
+
+    function addEmptyAnimation(trackId: string) {
+        _addAnimation(trackId);
+    }
+
     function addAnimation(trackId: string) {
+        _addAnimation(trackId)
+    }
+
+    function _addAnimation(trackId: string, animDef?: Animation) {
         const track = tracks.find((t) => t.id === trackId);
         if (!track) return;
 
         const playhead = get(get(videoController).playheadAnimateFrom);
         let videoEnd = get(get(videoController).endTime);
 
+        // Sort animations by start time
         track.animations.sort((a, b) => a.start - b.start);
 
         const duration = DEFAULT_DURATION;
 
+        // Find neighbors
         const currentAnim = track.animations.find(
             (a) => playhead >= a.start && playhead <= a.end
         );
@@ -83,7 +110,7 @@
             const distRight = currentAnim.end - playhead;
 
             if (distLeft <= distRight) {
-                // ✅ Insert to the LEFT → clip only
+                // Insert to the LEFT → clip only
                 end = currentAnim.start;
                 start = Math.max(end - duration, prevAnim ? prevAnim.end : 0);
             } else {
@@ -121,7 +148,7 @@
             end = start + duration;
 
             if (end > nextAnim.start) {
-                // Clip to nextAnim.start (❌ no push here)
+                // Clip to nextAnim.start (no push here)
                 end = nextAnim.start;
             }
         }
@@ -172,28 +199,47 @@
         }
 
         // --- Create animation ---
-        const anim: Animation = {
-            id: uuid(),
-            name: `Animation ${track.animations.length + 1}`,
-            start,
-            end,
-            keyframes: [
-                {
+        let anim: Animation;
+
+        if (animDef) {
+            // Use provided animation definition
+            anim = {
+                ...animDef,
+                id: uuid(),
+                name: animDef.name ?? `Animation ${track.animations.length + 1}`,
+                start,
+                end,
+                keyframes: animDef.keyframes.map((kf) => ({
+                    ...kf,
                     id: uuid(),
-                    time: 0,
-                    position: zeroVec(),
-                    rotation: zeroVec(),
-                    opacity: 1,
-                },
-                {
-                    id: uuid(),
-                    time: end - start,
-                    position: zeroVec(),
-                    rotation: zeroVec(),
-                    opacity: 1,
-                },
-            ],
-        };
+                    time: Math.min(kf.time, end - start), // clamp times to new duration
+                })),
+            };
+        } else {
+            // Default empty animation
+            anim = {
+                id: uuid(),
+                name: `Animation ${track.animations.length + 1}`,
+                start,
+                end,
+                keyframes: [
+                    {
+                        id: uuid(),
+                        time: 0,
+                        position: zeroVec(),
+                        rotation: zeroVec(),
+                        opacity: 1,
+                    },
+                    {
+                        id: uuid(),
+                        time: end - start,
+                        position: zeroVec(),
+                        rotation: zeroVec(),
+                        opacity: 1,
+                    },
+                ],
+            };
+        }
 
         track.animations.push(anim);
         track.animations.sort((a, b) => a.start - b.start);
@@ -421,13 +467,47 @@
                         class="px-2 py-1 rounded-md bg-secondary-600 text-white text-xs font-medium hover:bg-secondary-500"
                         onclick={() => addAnimation(track.id)}
                 >
+                    Add empty animation
+                </button>
+                <button
+                        class="px-2 py-1 rounded-md bg-secondary-600 text-white text-xs font-medium hover:bg-secondary-500"
+                        onclick={() => openAnimationDialog(track.id)}
+                >
                     Add animation
                 </button>
             </div>
         {/each}
     </div>
-
 </div>
+
+{#if showAnimationDialog}
+    <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div class="bg-surface-900 rounded-lg shadow-lg w-[90%] h-[90%] overflow-y-auto p-6">
+            <h2 class="text-lg font-bold mb-4 text-surface-100">Choose an Animation</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {#each animations as anim}
+                    <button
+                            class="p-4 bg-surface-800 rounded hover:bg-surface-700 text-left text-surface-200"
+                            onclick={() => chooseAnimation(anim)}
+                    >
+                        <div class="font-semibold">{anim.name}</div>
+                        <div class="text-xs text-surface-400">
+                            {anim.keyframes.length} keyframes
+                        </div>
+                    </button>
+                {/each}
+            </div>
+            <div class="mt-6 text-right">
+                <button
+                        class="px-4 py-2 bg-secondary-600 text-white rounded hover:bg-secondary-500"
+                        onclick={() => (showAnimationDialog = false)}
+                >
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
 
 <style>
     /* Hide number input spinners */
