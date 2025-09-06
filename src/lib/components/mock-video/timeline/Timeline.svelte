@@ -64,12 +64,10 @@
         const playhead = get(get(videoController).playheadAnimateFrom);
         let videoEnd = get(get(videoController).endTime);
 
-        // Sort animations by start time
         track.animations.sort((a, b) => a.start - b.start);
 
         const duration = DEFAULT_DURATION;
 
-        // Find neighbors
         const currentAnim = track.animations.find(
             (a) => playhead >= a.start && playhead <= a.end
         );
@@ -85,41 +83,34 @@
             const distRight = currentAnim.end - playhead;
 
             if (distLeft <= distRight) {
-                // Insert to the LEFT
+                // ✅ Insert to the LEFT → clip only
                 end = currentAnim.start;
-                start = end - duration;
-                if (start < 0) start = 0;
-
-                // If overlaps previous → push chain left (rare, usually only if edge-to-edge)
-                if (prevAnim && start < prevAnim.end) {
-                    const shift = duration;
-                    for (let i = 0; i <= track.animations.indexOf(currentAnim) - 1; i++) {
-                        track.animations[i].start -= shift;
-                        track.animations[i].end -= shift;
-                    }
-                    start = end - duration;
-                    if (start < 0) start = 0;
-                }
+                start = Math.max(end - duration, prevAnim ? prevAnim.end : 0);
             } else {
                 // Insert to the RIGHT
                 start = currentAnim.end;
                 end = start + duration;
 
-                if (nextAnim && end > nextAnim.start) {
-                    // Push chain right
-                    const shift = duration;
-                    const startIndex = track.animations.indexOf(nextAnim);
-                    for (let i = startIndex; i < track.animations.length; i++) {
-                        track.animations[i].start += shift;
-                        track.animations[i].end += shift;
-                    }
-                    end = start + duration;
+                if (nextAnim) {
+                    if (end > nextAnim.start) {
+                        // No room → push chain right
+                        const shift = duration;
+                        const startIndex = track.animations.indexOf(nextAnim);
+                        for (let i = startIndex; i < track.animations.length; i++) {
+                            track.animations[i].start += shift;
+                            track.animations[i].end += shift;
+                        }
+                        end = start + duration;
 
-                    // ✅ Extend timeline if needed
-                    const lastAnim = track.animations[track.animations.length - 1];
-                    if (lastAnim.end > videoEnd) {
-                        videoEnd = lastAnim.end;
-                        get(videoController).endTime.set(videoEnd);
+                        // Extend timeline if needed
+                        const lastAnim = track.animations[track.animations.length - 1];
+                        if (lastAnim.end > videoEnd) {
+                            videoEnd = lastAnim.end;
+                            get(videoController).endTime.set(videoEnd);
+                        }
+                    } else {
+                        // Clip to nextAnim.start
+                        end = Math.min(end, nextAnim.start);
                     }
                 }
             }
@@ -130,23 +121,8 @@
             end = start + duration;
 
             if (end > nextAnim.start) {
-                // Push everything right
-                const shift = duration;
-                for (let i = 0; i < track.animations.length; i++) {
-                    track.animations[i].start += shift;
-                    track.animations[i].end += shift;
-                }
-                end = start + duration;
-
-                // ✅ Extend timeline if needed
-                const lastAnim = track.animations[track.animations.length - 1];
-                if (lastAnim.end > videoEnd) {
-                    videoEnd = lastAnim.end;
-                    get(videoController).endTime.set(videoEnd);
-                }
-            } else {
-                // Clip to nextAnim.start
-                end = Math.min(end, nextAnim.start);
+                // Clip to nextAnim.start (❌ no push here)
+                end = nextAnim.start;
             }
         }
         // --- CASE 3: Playhead after last animation ---
@@ -165,7 +141,7 @@
             end = start + duration;
 
             if (end > nextAnim.start) {
-                // Push chain right
+                // No room → push chain right
                 const shift = duration;
                 const startIndex = track.animations.indexOf(nextAnim);
                 for (let i = startIndex; i < track.animations.length; i++) {
@@ -174,7 +150,6 @@
                 }
                 end = start + duration;
 
-                // ✅ Extend timeline if needed
                 const lastAnim = track.animations[track.animations.length - 1];
                 if (lastAnim.end > videoEnd) {
                     videoEnd = lastAnim.end;
