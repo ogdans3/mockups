@@ -1,6 +1,6 @@
 <script lang="ts">
     import {tweened} from "svelte/motion";
-    import {get} from "svelte/store";
+    import {get, derived} from "svelte/store";
     import {tick} from "svelte";
     import {videoController, currentPlayheadTime as globalPlayheadTime} from "../../../stores/video.svelte";
     import {cn} from "../../../utils/cn";
@@ -9,12 +9,13 @@
     const {
         color = "bg-red-500",
         class: className,
-        startTime,
-        endTime,
         rulerContainerWidth,
         time,
         showTime,
     } = $props();
+
+    const startTime = derived(get(videoController).startTime, (time) => time);
+    const endTime = derived(get(videoController).endTime, (time) => time);
 
     // tweened store for playhead position
     const playheadX = tweened(0, {
@@ -25,18 +26,18 @@
 
     function calculateX(t: number) {
         return (
-            Math.max(0, Math.min(1, (t - startTime) / (endTime - startTime))) *
+            Math.max(0, Math.min(1, (t - $startTime) / ($endTime - $startTime))) *
             rulerContainerWidth
         );
     }
 
     function calculateTime(x: number) {
-        return startTime + (x / rulerContainerWidth) * (endTime - startTime);
+        return $startTime + (x / rulerContainerWidth) * ($endTime - $startTime);
     }
 
     function animatePlayhead(currentTime: number) {
         const currentX = calculateX(currentTime);
-        const remaining = Math.max(0, (endTime - currentTime) * 1000);
+        const remaining = Math.max(0, ($endTime - currentTime) * 1000);
 
         // jump to current position instantly
         playheadX.set(currentX, {duration: 0});
@@ -67,7 +68,7 @@
                 playheadX.set(currentX, {duration: 0});
                 return;
             }
-            if (endTime > startTime && rulerContainerWidth > 0) {
+            if ($endTime > $startTime && rulerContainerWidth > 0) {
                 animatePlayhead(currentTime);
             }
         });

@@ -11,27 +11,24 @@
     import PlayheadComponent from "./Playhead.svelte";
     import fromBottom from "$lib/animations/FromBottom.json";
 
-    let {
-        endTime = 10,
-    } = $props<{
-        endTime?: number;
-    }>();
     let startTime = 0;
     let mouseHoverPosition = $state<number | null>(null);
 
     function clampToTimeline(t: number) {
-        return Math.max(startTime, Math.min(endTime, t));
+        return Math.max(startTime, Math.min($endTime, t));
     }
 
     function createAnimationForTrack(track: Track, index: number): Animation {
         return {...fromBottom};
     }
 
+    const endTime = derived(get(videoController).endTime, (time) => time);
+
     function createAnimationForTrack2(track: Track, index: number): Animation {
         const last = track.animations.at(-1);
         const proposedStart = last ? last.end : startTime;
         const start = clampToTimeline(proposedStart);
-        const end = clampToTimeline(Math.min(start + DEFAULT_DURATION, endTime));
+        const end = clampToTimeline(Math.min(start + DEFAULT_DURATION, $endTime));
 
         return {
             id: uuid(),
@@ -65,54 +62,141 @@
         if (!track) return;
 
         const playhead = get(get(videoController).playheadAnimateFrom);
-        const videoEnd = get(get(videoController).endTime);
+        let videoEnd = get(get(videoController).endTime);
 
-        let start = clampToTimeline(playhead);
-        let end = clampToTimeline(start + DEFAULT_DURATION);
+        // Sort animations by start time
+        track.animations.sort((a, b) => a.start - b.start);
 
-        if (track.animations.length > 0) {
-            // Find the next animation after the playhead
-            const nextAnim = track.animations.find((a) => a.start > playhead);
-            if (nextAnim) {
-                end = Math.min(nextAnim.start, start + DEFAULT_DURATION, videoEnd);
+        const duration = DEFAULT_DURATION;
+
+        // Find neighbors
+        const currentAnim = track.animations.find(
+            (a) => playhead >= a.start && playhead <= a.end
+        );
+        const prevAnim = [...track.animations].reverse().find((a) => a.end <= playhead);
+        const nextAnim = track.animations.find((a) => a.start >= playhead);
+
+        let start: number;
+        let end: number;
+
+        // --- CASE 1: Playhead inside an animation ---
+        if (currentAnim) {
+            const distLeft = playhead - currentAnim.start;
+            const distRight = currentAnim.end - playhead;
+
+            if (distLeft <= distRight) {
+                // Insert to the LEFT
+                end = currentAnim.start;
+                start = end - duration;
+                if (start < 0) start = 0;
+
+                // If overlaps previous → push chain left (rare, usually only if edge-to-edge)
+                if (prevAnim && start < prevAnim.end) {
+                    const shift = duration;
+                    for (let i = 0; i <= track.animations.indexOf(currentAnim) - 1; i++) {
+                        track.animations[i].start -= shift;
+                        track.animations[i].end -= shift;
+                    }
+                    start = end - duration;
+                    if (start < 0) start = 0;
+                }
             } else {
-                end = Math.min(start + DEFAULT_DURATION, videoEnd);
-            }
-        } else {
-            end = Math.min(start + DEFAULT_DURATION, videoEnd);
-        }
+                // Insert to the RIGHT
+                start = currentAnim.end;
+                end = start + duration;
 
-        // --- Find closest keyframes around playhead ---
-        let beforeKf: Keyframe | null = null;
-        let afterKf: Keyframe | null = null;
-        let beforeTime = -Infinity;
-        let afterTime = Infinity;
+                if (nextAnim && end > nextAnim.start) {
+                    // Push chain right
+                    const shift = duration;
+                    const startIndex = track.animations.indexOf(nextAnim);
+                    for (let i = startIndex; i < track.animations.length; i++) {
+                        track.animations[i].start += shift;
+                        track.animations[i].end += shift;
+                    }
+                    end = start + duration;
 
-        for (const anim of track.animations) {
-            for (const kf of anim.keyframes) {
-                const absTime = anim.start + kf.time;
-
-                if (absTime <= playhead && absTime > beforeTime) {
-                    beforeKf = kf;
-                    beforeTime = absTime;
-                }
-
-                if (absTime >= playhead && absTime < afterTime) {
-                    afterKf = kf;
-                    afterTime = absTime;
+                    // ✅ Extend timeline if needed
+                    const lastAnim = track.animations[track.animations.length - 1];
+                    if (lastAnim.end > videoEnd) {
+                        videoEnd = lastAnim.end;
+                        get(videoController).endTime.set(videoEnd);
+                    }
                 }
             }
         }
+        // --- CASE 2: Playhead before first animation ---
+        else if (!prevAnim && nextAnim) {
+            start = playhead;
+            end = start + duration;
 
-        // Default values if no keyframes found
-        const startPos: Vec3 = beforeKf?.position ?? afterKf.position ?? zeroVec();
-        const startRot: Vec3 = beforeKf?.rotation ?? afterKf.rotation ?? zeroVec();
-        const startOpacity = beforeKf?.opacity ?? 1;
+            if (end > nextAnim.start) {
+                // Push everything right
+                const shift = duration;
+                for (let i = 0; i < track.animations.length; i++) {
+                    track.animations[i].start += shift;
+                    track.animations[i].end += shift;
+                }
+                end = start + duration;
 
-        const endPos: Vec3 = afterKf?.position ?? beforeKf.position ?? startPos;
-        const endRot: Vec3 = afterKf?.rotation ?? beforeKf.rotation ?? startRot;
-        const endOpacity = afterKf?.opacity ?? startOpacity;
+                // ✅ Extend timeline if needed
+                const lastAnim = track.animations[track.animations.length - 1];
+                if (lastAnim.end > videoEnd) {
+                    videoEnd = lastAnim.end;
+                    get(videoController).endTime.set(videoEnd);
+                }
+            } else {
+                // Clip to nextAnim.start
+                end = Math.min(end, nextAnim.start);
+            }
+        }
+        // --- CASE 3: Playhead after last animation ---
+        else if (prevAnim && !nextAnim) {
+            start = Math.max(prevAnim.end, playhead);
+            end = start + duration;
 
+            if (end > videoEnd) {
+                videoEnd = end;
+                get(videoController).endTime.set(videoEnd);
+            }
+        }
+        // --- CASE 4: Playhead between two animations ---
+        else if (prevAnim && nextAnim) {
+            start = Math.max(prevAnim.end, playhead);
+            end = start + duration;
+
+            if (end > nextAnim.start) {
+                // Push chain right
+                const shift = duration;
+                const startIndex = track.animations.indexOf(nextAnim);
+                for (let i = startIndex; i < track.animations.length; i++) {
+                    track.animations[i].start += shift;
+                    track.animations[i].end += shift;
+                }
+                end = start + duration;
+
+                // ✅ Extend timeline if needed
+                const lastAnim = track.animations[track.animations.length - 1];
+                if (lastAnim.end > videoEnd) {
+                    videoEnd = lastAnim.end;
+                    get(videoController).endTime.set(videoEnd);
+                }
+            } else {
+                // Clip to nextAnim.start
+                end = Math.min(end, nextAnim.start);
+            }
+        }
+        // --- CASE 5: No animations at all ---
+        else {
+            start = playhead;
+            end = start + duration;
+
+            if (end > videoEnd) {
+                videoEnd = end;
+                get(videoController).endTime.set(videoEnd);
+            }
+        }
+
+        // --- Create animation ---
         const anim: Animation = {
             id: uuid(),
             name: `Animation ${track.animations.length + 1}`,
@@ -122,21 +206,22 @@
                 {
                     id: uuid(),
                     time: 0,
-                    position: {...startPos},
-                    rotation: {...startRot},
-                    opacity: startOpacity,
+                    position: zeroVec(),
+                    rotation: zeroVec(),
+                    opacity: 1,
                 },
                 {
                     id: uuid(),
                     time: end - start,
-                    position: {...endPos},
-                    rotation: {...endRot},
-                    opacity: endOpacity,
+                    position: zeroVec(),
+                    rotation: zeroVec(),
+                    opacity: 1,
                 },
             ],
         };
 
         track.animations.push(anim);
+        track.animations.sort((a, b) => a.start - b.start);
     }
 
     const labelColWidth = 160;
@@ -146,7 +231,7 @@
     let rulerContainerWidth = $state(0);
 
     // total seconds
-    const totalSeconds = $derived(Math.max(0, endTime - startTime));
+    const totalSeconds = $derived(Math.max(0, $endTime - startTime));
 
     // number of half-second ticks
     const totalTicks = $derived(Math.ceil(totalSeconds / 0.5));
@@ -155,7 +240,7 @@
     const tickWidth = $derived(
         totalTicks > 0 ? rulerContainerWidth / totalTicks : 0
     );
-    const pxPerSecond = $derived(endTime - startTime > 0 ? rulerContainerWidth / endTime - startTime : 0);
+    const pxPerSecond = $derived($endTime - startTime > 0 ? rulerContainerWidth / $endTime - startTime : 0);
 
     const ticks = $derived.by(() => {
         const arr: { time: number; type: "major" | "minor"; label?: string }[] = [];
@@ -168,7 +253,7 @@
             label: `${startTime.toFixed(1).replace(/\.0$/, "")}s`
         });
 
-        for (let t = startTime + step; t < endTime; t += step) {
+        for (let t = startTime + step; t < $endTime; t += step) {
             const isWholeSecond = Math.abs(t - Math.round(t)) < 1e-6;
             arr.push({
                 time: +t.toFixed(2),
@@ -179,16 +264,16 @@
 
         // Always include end
         arr.push({
-            time: endTime,
+            time: $endTime,
             type: "major",
-            label: `${endTime.toFixed(1).replace(/\.0$/, "")}s`
+            label: `${$endTime.toFixed(1).replace(/\.0$/, "")}s`
         });
 
         return arr;
     });
 
     let currentTimeField = $state(get(currentPlayheadTime).toFixed(2));
-    let endTimeField = $state(endTime.toFixed(2));
+    let endTimeField = $state($endTime.toFixed(2));
 
     $effect(() => {
         currentTimeField = $currentPlayheadTime.toFixed(2);
@@ -196,8 +281,8 @@
 
     function handleCurrentTimeInput(e: Event) {
         let val = parseFloat((e.target as HTMLInputElement).value);
-        if (val > endTime) {
-            val = endTime;
+        if (val > $endTime) {
+            val = $endTime;
         }
         if (!isNaN(val)) {
             get(videoController).setPlayheadPosition(val);
@@ -210,7 +295,7 @@
     function handleEndInput(e: Event) {
         const val = parseFloat((e.target as HTMLInputElement).value);
         if (!isNaN(val)) {
-            endTime = val;
+            get(videoController).endTime.set(val);
             endTimeField = val.toFixed(2);
         } else {
             endTimeField = "";
@@ -338,8 +423,6 @@
                         {#each tracks as track, i (track.id)}
                             <TrackComponent
                                     bind:track={tracks[i]}
-                                    {startTime}
-                                    {endTime}
                                     {pxPerSecond}
                             />
                         {/each}
@@ -348,9 +431,8 @@
             </div>
         </div>
 
-        <PlayheadComponent showTime={true} time={mouseHoverPosition} color="bg-blue-500" {startTime} {endTime}
-                           {rulerContainerWidth}/>
-        <PlayheadComponent showTime={false} {startTime} {endTime} {rulerContainerWidth}/>
+        <PlayheadComponent showTime={true} time={mouseHoverPosition} color="bg-blue-500" {rulerContainerWidth}/>
+        <PlayheadComponent showTime={false} {rulerContainerWidth}/>
     </div>
 
     <!-- Controls per track: separate row with buttons -->

@@ -1,26 +1,26 @@
 <script lang="ts">
     import {getAnimation} from "./Animation";
+    import {get, derived} from "svelte/store";
     import type {Track, Animation, Keyframe, Vec3} from "./Animation";
     import {createEventDispatcher} from "svelte";
-    import {get} from "svelte/store";
     import {selectedAnimationKeyframe, selectedAnimationStore} from "../../stores/animation.svelte";
     import {transformControlPosition, transformControlRotation} from "../../stores/transform.svelte";
     import {videoController} from "../../stores/video.svelte";
 
     //TODO: Refactor this uglyness
 
-    let {track = $bindable(), startTime, endTime, pxPerSecond}:
+    let {track = $bindable(), pxPerSecond}:
         {
             track: Track,
-            startTime: number,
-            endTime: number,
             pxPerSecond: number
         } = $props();
 
     const dispatch = createEventDispatcher();
 
+    const startTime = derived(get(videoController).startTime, (time) => time);
+    const endTime = derived(get(videoController).endTime, (time) => time);
     function leftFor(t: number) {
-        return (t - startTime) * pxPerSecond;
+        return (t - $startTime) * pxPerSecond;
     }
 
     function widthFor(a: Animation) {
@@ -71,18 +71,18 @@
         if (dragMode === "move") {
             const duration = originalEnd - originalStart;
             newStart = Math.max(
-                startTime,
-                Math.min(endTime - duration, originalStart + deltaSec)
+                $startTime,
+                Math.min($endTime - duration, originalStart + deltaSec)
             );
             newEnd = newStart + duration;
         } else if (dragMode === "resize-left") {
             newStart = Math.max(
-                startTime,
+                $startTime,
                 Math.min(originalEnd - 0.1, originalStart + deltaSec)
             );
         } else if (dragMode === "resize-right") {
             newEnd = Math.min(
-                endTime,
+                $endTime,
                 Math.max(originalStart + 0.1, originalEnd + deltaSec)
             );
         }
