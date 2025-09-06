@@ -130,35 +130,84 @@
         e.stopPropagation();
         const animation = getAnimation(track, animationId);
         const keyframe = animation.keyframes[keyframeIndex];
-        if (get(selectedAnimationStore)?.id === animation.id && get(selectedAnimationKeyframe)?.id === keyframe.id) {
+
+        // Toggle off if already selected
+        if (
+            get(selectedAnimationStore)?.id === animation.id &&
+            get(selectedAnimationKeyframe)?.id === keyframe.id
+        ) {
             selectedAnimationStore.set(null);
             selectedAnimationKeyframe.set(null);
             return;
         }
+
         selectedAnimationStore.set(animation);
         selectedAnimationKeyframe.set(keyframe);
 
-        transformControlPosition.set(keyframe.position);
-        transformControlRotation.set(keyframe.rotation);
+        // Set transform controls to this keyframe
+        transformControlPosition.set({...keyframe.position});
+        transformControlRotation.set({...keyframe.rotation});
 
+        // Move playhead to this keyframe
         get(videoController).setPlayheadPosition(animation.start + keyframe.time);
+
+        // Subscribe to transform changes
         transformControlPosition.subscribe((position: Vec3) => {
-            if (animation.id !== get(selectedAnimationStore)?.id) {
-                return;
+            if (get(videoController).isPlaying) return;
+            if (animation.id !== get(selectedAnimationStore)?.id) return;
+            if (keyframe.id !== get(selectedAnimationKeyframe)?.id) return;
+
+            // Update this keyframe
+            keyframe.position = {...position};
+
+            // ✅ If first keyframe → update last keyframe of previous animation
+            if (keyframeIndex === 0) {
+                const animIndex = track.animations.findIndex(a => a.id === animation.id);
+                if (animIndex > 0) {
+                    const prevAnim = track.animations[animIndex - 1];
+                    const lastKf = prevAnim.keyframes[prevAnim.keyframes.length - 1];
+                    lastKf.position = {...position};
+                }
             }
-            if (keyframe.id !== get(selectedAnimationKeyframe)?.id) {
-                return;
+
+            // ✅ If last keyframe → update first keyframe of next animation
+            if (keyframeIndex === animation.keyframes.length - 1) {
+                const animIndex = track.animations.findIndex(a => a.id === animation.id);
+                if (animIndex < track.animations.length - 1) {
+                    const nextAnim = track.animations[animIndex + 1];
+                    const firstKf = nextAnim.keyframes[0];
+                    firstKf.position = {...position};
+                }
             }
-            keyframe.position = position;
         });
+
         transformControlRotation.subscribe((rotation: Vec3) => {
-            if (animation.id !== get(selectedAnimationStore)?.id) {
-                return;
+            if (get(videoController).isPlaying) return;
+            if (animation.id !== get(selectedAnimationStore)?.id) return;
+            if (keyframe.id !== get(selectedAnimationKeyframe)?.id) return;
+
+            // Update this keyframe
+            keyframe.rotation = {...rotation};
+
+            // ✅ If first keyframe → update last keyframe of previous animation
+            if (keyframeIndex === 0) {
+                const animIndex = track.animations.findIndex(a => a.id === animation.id);
+                if (animIndex > 0) {
+                    const prevAnim = track.animations[animIndex - 1];
+                    const lastKf = prevAnim.keyframes[prevAnim.keyframes.length - 1];
+                    lastKf.rotation = {...rotation};
+                }
             }
-            if (keyframe.id !== get(selectedAnimationKeyframe)?.id) {
-                return;
+
+            // ✅ If last keyframe → update first keyframe of next animation
+            if (keyframeIndex === animation.keyframes.length - 1) {
+                const animIndex = track.animations.findIndex(a => a.id === animation.id);
+                if (animIndex < track.animations.length - 1) {
+                    const nextAnim = track.animations[animIndex + 1];
+                    const firstKf = nextAnim.keyframes[0];
+                    firstKf.rotation = {...rotation};
+                }
             }
-            keyframe.rotation = rotation;
         });
     }
 

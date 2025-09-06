@@ -1,14 +1,21 @@
 ## TODO
 
 - [] Video
-- - [] Animations
-- - [] Store animations
-- - [] Community animations
-- - [] Search animations
-- - [] Render
+-
+    - [] Animations
+-
+    - [] Store animations
+-
+    - [] Community animations
+-
+    - [] Search animations
+-
+    - [] Render
 - [] Image
 - [] Images
-- - [] Image templates
-- - [] Render
+-
+    - [] Image templates
+-
+    - [] Render
 - [] Account
 - [] SSO

@@ -4,6 +4,7 @@
     import type {Track, Animation} from "../Animation";
     import {get, derived} from "svelte/store";
     import {zeroVec} from "../Animation";
+    import type {Vec3, Keyframe} from "../Animation";
     import {videoPlaying, videoController, currentPlayheadTime} from "../../../stores/video.svelte";
     import {tracks, setTransformControlsFromPlayhead} from "../../../stores/tracks.svelte";
     import TrackComponent from "../Track.svelte";
@@ -59,16 +60,6 @@
         setTransformControlsFromPlayhead();
     }
 
-    /*
-    function addAnimation(trackId: string) {
-        const track = tracks.find((t) => t.id === trackId);
-        if (!track) return;
-        const anim = createAnimationForTrack2(track, track.animations.length);
-        //track.animations = [...track.animations, anim];
-        track.animations.push(anim);
-    }
-    */
-
     function addAnimation(trackId: string) {
         const track = tracks.find((t) => t.id === trackId);
         if (!track) return;
@@ -79,20 +70,48 @@
         let start = clampToTimeline(playhead);
         let end = clampToTimeline(start + DEFAULT_DURATION);
 
-        console.log(track);
         if (track.animations.length > 0) {
             // Find the next animation after the playhead
             const nextAnim = track.animations.find((a) => a.start > playhead);
-
             if (nextAnim) {
                 end = Math.min(nextAnim.start, start + DEFAULT_DURATION, videoEnd);
             } else {
                 end = Math.min(start + DEFAULT_DURATION, videoEnd);
             }
         } else {
-            // No animations yet → default to 2s or until end
             end = Math.min(start + DEFAULT_DURATION, videoEnd);
         }
+
+        // --- Find closest keyframes around playhead ---
+        let beforeKf: Keyframe | null = null;
+        let afterKf: Keyframe | null = null;
+        let beforeTime = -Infinity;
+        let afterTime = Infinity;
+
+        for (const anim of track.animations) {
+            for (const kf of anim.keyframes) {
+                const absTime = anim.start + kf.time;
+
+                if (absTime <= playhead && absTime > beforeTime) {
+                    beforeKf = kf;
+                    beforeTime = absTime;
+                }
+
+                if (absTime >= playhead && absTime < afterTime) {
+                    afterKf = kf;
+                    afterTime = absTime;
+                }
+            }
+        }
+
+        // Default values if no keyframes found
+        const startPos: Vec3 = beforeKf?.position ?? afterKf.position ?? zeroVec();
+        const startRot: Vec3 = beforeKf?.rotation ?? afterKf.rotation ?? zeroVec();
+        const startOpacity = beforeKf?.opacity ?? 1;
+
+        const endPos: Vec3 = afterKf?.position ?? beforeKf.position ?? startPos;
+        const endRot: Vec3 = afterKf?.rotation ?? beforeKf.rotation ?? startRot;
+        const endOpacity = afterKf?.opacity ?? startOpacity;
 
         const anim: Animation = {
             id: uuid(),
@@ -103,16 +122,16 @@
                 {
                     id: uuid(),
                     time: 0,
-                    position: zeroVec(),
-                    rotation: zeroVec(),
-                    opacity: 0,
+                    position: {...startPos},
+                    rotation: {...startRot},
+                    opacity: startOpacity,
                 },
                 {
                     id: uuid(),
                     time: end - start,
-                    position: zeroVec(),
-                    rotation: zeroVec(),
-                    opacity: 0,
+                    position: {...endPos},
+                    rotation: {...endRot},
+                    opacity: endOpacity,
                 },
             ],
         };
@@ -214,7 +233,9 @@
         get(videoController).setPlayheadPosition(mouseHoverPosition);
     }
 
-    addPhone();
+    if (tracks.length === 0) {
+        addPhone();
+    }
 </script>
 
 <div class="timeline bg-surface-900 border-t border-surface-700/40 p-4 flex flex-col gap-4">
